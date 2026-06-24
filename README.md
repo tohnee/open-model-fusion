@@ -44,6 +44,7 @@ conclusion.
 
 ```bash
 open-fusion-eval --demo                 # zero-key demo: see the report + verdict
+open-fusion-eval --suite fusion --demo  # explicit Fusion-capability smoke test
 open-fusion-eval --preset budget --baseline anthropic/claude-opus-4.8 \
     --grader llm --grader-model google/gemini-3.1-pro-preview --tools --md report.md
 ```
@@ -55,7 +56,7 @@ open-fusion-skill/
 ├── SKILL.md                 # skill manifest + when-to-use + run cmds (Claude Code / Codex)
 ├── INSTALL.md               # install + agent integration + grounded-tool setup
 ├── ARCHITECTURE.md          # module map, contracts, data flow, state machine
-├── EVAL.md                  # DRACO-style evaluation standard + how to run it
+├── EVAL.md                  # DRACO-style + Fusion-capability evaluation standard
 ├── pyproject.toml           # pip-installable; registers `open-fusion` + `open-fusion-eval`
 ├── config/presets.yaml      # quality / budget panels
 ├── references/
@@ -83,7 +84,7 @@ open-fusion-skill/
         ├── report.py    verdict decision rules + markdown/json rendering
         ├── demo.py      zero-key demo client
         ├── cli.py       `open-fusion-eval --demo`
-        └── tasks/sample_tasks.json
+        └── tasks/              # sample, DRACO-style, long-horizon, Fusion capability suites
 ```
 
 ## Design rules that are correctness, not style

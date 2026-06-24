@@ -34,8 +34,8 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="open-fusion-eval",
         description="DRACO-style evaluation: Fusion vs a solo baseline, with a verdict.")
     p.add_argument("--tasks", default="sample", help="'sample' or path to a DRACO-style JSON file.")
-    p.add_argument("--suite", choices=["sample", "draco", "longhorizon", "semiconductor", "all"],
-                   default=None, help="Built-in task suite (overrides --tasks).")
+    p.add_argument("--suite", choices=["sample", "draco", "longhorizon", "semiconductor", "fusion", "all"],
+                   default=None, help="Built-in task suite (overrides --tasks). Use fusion for a small Fusion-capability smoke test.")
     p.add_argument("--preset", choices=["quality", "budget"], default=None)
     p.add_argument("--panel", default=None, help="Comma-separated panel slugs (overrides preset).")
     p.add_argument("--judge", default=None, help="Judge/synthesizer slug.")

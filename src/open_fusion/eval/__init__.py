@@ -37,6 +37,7 @@ _SUITES = {
     "draco": "draco_tasks.json",
     "longhorizon": "longhorizon_tasks.json",
     "semiconductor": "semiconductor_dram_tasks.json",
+    "fusion": "fusion_capability_tasks.json",
 }
 
 
@@ -52,7 +53,7 @@ def _load_file(path: Path) -> list[Task]:
 
 def load_tasks(source: str = "sample") -> list[Task]:
     """Load a task set. `source` is a suite name ('sample', 'draco', 'longhorizon',
-    'semiconductor', 'all') or a path to a DRACO-style JSON file."""
+    'semiconductor', 'fusion', 'all') or a path to a DRACO-style JSON file."""
     if source == "all":
         out: list[Task] = []
         for name in ("draco", "longhorizon", "semiconductor"):
