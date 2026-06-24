@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open Fusion · 设计文档</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1e25; --paper:#eef1f4; --card:#ffffff; --muted:#5d6873; --faint:#8b96a1;
+    --line:#d6dde3; --line2:#e6ebef;
+    --fuse:#3b46d6;          /* synthesized single line / primary accent */
+    --judge:#b07d2b;         /* the judge "prism" */
+    --pa:#3f7d8c; --pb:#6f8a3e; --pc:#9a5a44;   /* three panel streams */
+    --win:#13895e; --warn:#c5482f;
+    --shadow:0 1px 2px rgba(26,30,37,.05),0 8px 24px rgba(26,30,37,.06);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"Newsreader",Georgia,serif; font-size:18px; line-height:1.66;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:1180px; margin:0 auto; padding:0 28px}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+  .disp{font-family:"Space Grotesk",system-ui,sans-serif}
+
+  /* ---- header / hero ---- */
+  header.hero{position:relative; overflow:hidden; border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#fff 0%, #f4f7f9 100%)}
+  .hero-inner{padding:64px 0 40px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace; font-size:12.5px; letter-spacing:.22em;
+    text-transform:uppercase; color:var(--fuse); font-weight:600}
+  h1{font-family:"Space Grotesk",sans-serif; font-weight:700; letter-spacing:-.02em;
+    font-size:clamp(34px,5.4vw,62px); line-height:1.02; margin:.32em 0 .18em}
+  h1 .em{color:var(--fuse)}
+  .thesis{font-size:clamp(18px,2.2vw,22px); color:var(--muted); max-width:38em; margin:0 0 26px}
+  .stats{display:flex; flex-wrap:wrap; gap:30px; margin-top:30px; padding-top:24px;
+    border-top:1px solid var(--line2)}
+  .stat .n{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:30px; line-height:1;
+    color:var(--ink)}
+  .stat .l{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.06em;
+    color:var(--faint); text-transform:uppercase; margin-top:7px}
+  .hero-fig{margin-top:14px}
+
+  /* ---- layout with TOC ---- */
+  .shell{display:grid; grid-template-columns:230px minmax(0,1fr); gap:54px; padding:54px 0 90px}
+  nav.toc{position:sticky; top:24px; align-self:start; font-family:"IBM Plex Mono",monospace;
+    font-size:13px; line-height:1.5}
+  nav.toc .grp{margin-bottom:18px}
+  nav.toc a{display:block; color:var(--muted); text-decoration:none; padding:5px 0 5px 14px;
+    border-left:2px solid var(--line); transition:.18s}
+  nav.toc a:hover{color:var(--ink); border-color:var(--faint)}
+  nav.toc a.active{color:var(--fuse); border-color:var(--fuse); font-weight:600}
+  nav.toc .k{color:var(--faint); margin-right:8px}
+  nav.toc .cap{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--faint); padding:0 0 8px 0}
+
+  main{min-width:0}
+  section{margin-bottom:64px; scroll-margin-top:24px}
+  .sec-head{display:flex; align-items:baseline; gap:16px; margin-bottom:10px}
+  .sec-num{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:15px;
+    color:var(--fuse); letter-spacing:.04em}
+  h2{font-family:"Space Grotesk",sans-serif; font-weight:600; letter-spacing:-.015em;
+    font-size:clamp(25px,3.4vw,34px); line-height:1.1; margin:0}
+  h3{font-family:"Space Grotesk",sans-serif; font-weight:600; font-size:20px; letter-spacing:-.01em;
+    margin:34px 0 8px}
+  h4{font-family:"IBM Plex Mono",monospace; font-weight:600; font-size:13.5px; letter-spacing:.04em;
+    text-transform:uppercase; color:var(--muted); margin:26px 0 6px}
+  p{margin:0 0 16px}
+  .lead{font-size:20px; color:#39414b}
+  strong{font-weight:600}
+  .term{font-family:"IBM Plex Mono",monospace; font-size:.86em; background:#e9edf1;
+    padding:1px 6px; border-radius:5px; color:#2b333c}
+  a.ref{color:var(--fuse); text-decoration:none; border-bottom:1px solid rgba(59,70,214,.3)}
+  a.ref:hover{border-color:var(--fuse)}
+
+  /* cards / callouts */
+  figure{margin:24px 0; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:20px 22px; box-shadow:var(--shadow)}
+  figure.flush{padding:8px 8px 14px}
+  figcaption{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--faint);
+    letter-spacing:.04em; margin-top:12px; text-align:center}
+  .callout{border-left:3px solid var(--fuse); background:#f3f5ff; border-radius:0 12px 12px 0;
+    padding:16px 20px; margin:22px 0; font-size:17px}
+  .callout.warn{border-color:var(--warn); background:#fdf3f1}
+  .callout .tag{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--fuse); font-weight:600; display:block; margin-bottom:4px}
+  .callout.warn .tag{color:var(--warn)}
+
+  pre{background:#1c2128; color:#dfe6ee; border-radius:12px; padding:18px 20px; overflow:auto;
+    font-family:"IBM Plex Mono",monospace; font-size:13px; line-height:1.62; margin:18px 0;
+    border:1px solid #11151a}
+  pre .c{color:#7c8a99}    /* comment */
+  pre .k{color:#9db4ff}    /* keyword/accent */
+  pre .s{color:#9fd3a8}    /* string/good */
+  pre .w{color:#e6a07a}    /* warn */
+  code{font-family:"IBM Plex Mono",monospace; font-size:.88em}
+
+  table{width:100%; border-collapse:collapse; margin:20px 0; font-size:15px;
+    font-family:"IBM Plex Mono",monospace}
+  caption{caption-side:top; text-align:left; font-family:"IBM Plex Mono",monospace; font-size:12px;
+    color:var(--faint); letter-spacing:.04em; margin-bottom:8px}
+  th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line2)}
+  thead th{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);
+    border-bottom:1.5px solid var(--line)}
+  tbody tr:hover{background:#f6f8fa}
+  td.r,th.r{text-align:right}
+  .pos{color:var(--win)} .neg{color:var(--warn)}
+
+  ul.clean{list-style:none; padding:0; margin:16px 0}
+  ul.clean li{position:relative; padding:6px 0 6px 26px; border-bottom:1px solid var(--line2)}
+  ul.clean li:last-child{border-bottom:0}
+  ul.clean li::before{content:"›"; position:absolute; left:6px; top:6px; color:var(--fuse);
+    font-family:"Space Grotesk",sans-serif; font-weight:700}
+
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  .pill{display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+    padding:3px 10px; border-radius:999px; border:1px solid var(--line); color:var(--muted);
+    background:#fff; margin:0 6px 6px 0}
+  .pill.dot::before{content:""; display:inline-block; width:8px; height:8px; border-radius:50%;
+    margin-right:7px; vertical-align:1px; background:var(--fuse)}
+
+  .reveal{opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease}
+  .reveal.in{opacity:1; transform:none}
+
+  footer{border-top:1px solid var(--line); padding:34px 0 60px; color:var(--faint);
+    font-family:"IBM Plex Mono",monospace; font-size:12.5px}
+
+  @media (max-width:880px){
+    .shell{grid-template-columns:1fr; gap:0; padding:30px 0 70px}
+    nav.toc{display:none}
+    .grid2{grid-template-columns:1fr}
+    body{font-size:17px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .reveal{opacity:1; transform:none; transition:none}
+    .draw{stroke-dashoffset:0 !important; animation:none !important}
+  }
+  /* hero convergence lines: panel streams dashed (parallel/exploratory),
+     the synthesized line is solid (see inline stroke styles) */
+  .stream{stroke-dasharray:2 7; stroke-linecap:round; opacity:.92}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div class="eyebrow">Open Fusion · 设计文档 / Design Document</div>
+    <h1 class="disp">把多模型审议<br>做成一个<span class="em">可被评测</span>的工具</h1>
+    <p class="thesis">一次提问扇出到一组模型并行作答,经结构化裁判蒸馏,由调用方模型写出有据可循的最终答案——
+      而这套技能(skill)只有在评测系统给出"值不值得用"的结论之后,才被拿来直接应用。</p>
+
+    <!-- SIGNATURE: convergence diagram -->
+    <figure class="flush hero-fig reveal">
+      <svg viewBox="0 0 980 230" width="100%" role="img" aria-label="Fusion 管线汇流示意">
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="var(--fuse)"></path>
+          </marker>
+        </defs>
+        <!-- panel nodes -->
+        <g class="disp" font-size="13" font-weight="600">
+          <circle cx="70" cy="55"  r="9" fill="var(--pa)"></circle>
+          <circle cx="70" cy="115" r="9" fill="var(--pb)"></circle>
+          <circle cx="70" cy="175" r="9" fill="var(--pc)"></circle>
+          <text x="92" y="59"  fill="var(--ink)">Panel A · 模型甲</text>
+          <text x="92" y="119" fill="var(--ink)">Panel B · 模型乙</text>
+          <text x="92" y="179" fill="var(--ink)">Panel C · 模型丙</text>
+        </g>
+        <!-- fan-in to judge -->
+        <g fill="none" stroke-width="2">
+          <path class="stream" d="M300,55  C 380,55 400,115 470,115" stroke="var(--pa)"></path>
+          <path class="stream" d="M300,115 C 380,115 400,115 470,115" stroke="var(--pb)"></path>
+          <path class="stream" d="M300,175 C 380,175 400,115 470,115" stroke="var(--pc)"></path>
+        </g>
+        <!-- judge prism -->
+        <g>
+          <rect x="470" y="88" width="56" height="56" rx="8" transform="rotate(45 498 116)"
+                fill="#fff" stroke="var(--judge)" stroke-width="2.5"></rect>
+          <text x="498" y="120" text-anchor="middle" class="disp" font-size="12.5" font-weight="600"
+                fill="var(--judge)">JUDGE</text>
+        </g>
+        <text x="498" y="200" text-anchor="middle" class="mono" font-size="11" fill="var(--faint)">结构化分析 JSON</text>
+        <!-- judge -> synthesis single indigo line -->
+        <path d="M540,115 L690,115" stroke="var(--fuse)" stroke-width="2.6" fill="none"
+              marker-end="url(#ar)"></path>
+        <!-- synthesis node -->
+        <rect x="700" y="92" width="118" height="46" rx="10" fill="var(--fuse)"></rect>
+        <text x="759" y="120" text-anchor="middle" class="disp" font-size="13" font-weight="600" fill="#fff">SYNTHESIS</text>
+        <text x="759" y="160" text-anchor="middle" class="mono" font-size="10.5" fill="var(--faint)">caller 写答案 · 工具关闭</text>
+        <!-- final -->
+        <path d="M818,115 L862,115" stroke="var(--fuse)" stroke-width="2.6" marker-end="url(#ar)"></path>
+        <text x="884" y="120" class="disp" font-size="13" font-weight="700" fill="var(--ink)">答案</text>
+      </svg>
+      <figcaption>扇出 → 裁判蒸馏 → 合成。多条异构推理路径汇成一条有据可循的输出。</figcaption>
+    </figure>
+
+    <div class="stats">
+      <div class="stat"><div class="n disp">10</div><div class="l">DRACO 领域</div></div>
+      <div class="stat"><div class="n disp">3</div><div class="l">评测套件</div></div>
+      <div class="stat"><div class="n disp">107</div><div class="l">离线测试全绿</div></div>
+      <div class="stat"><div class="n disp">pass^k</div><div class="l">长程可靠性</div></div>
+      <div class="stat"><div class="n disp">0</div><div class="l">运行期依赖</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap shell">
+  <!-- ============ TOC ============ -->
+  <nav class="toc" aria-label="目录">
+    <div class="grp">
+      <div class="cap">目录</div>
+      <a href="#s1"><span class="k">01</span>原理分析</a>
+      <a href="#s2"><span class="k">02</span>逻辑设计</a>
+      <a href="#s3"><span class="k">03</span>评测系统</a>
+      <a href="#s4"><span class="k">04</span>Skills 集成</a>
+      <a href="#s5"><span class="k">05</span>附录与引用</a>
+    </div>
+  </nav>
+
+  <main>
+
+  <!-- ============ 01 原理分析 ============ -->
+  <section id="s1" class="reveal">
+    <div class="sec-head"><span class="sec-num disp">01</span><h2 class="disp">原理分析</h2></div>
+    <p class="lead">Fusion 的收益不来自"更大的模型",而来自<strong>把多条相互独立的推理路径,经过一个会做结构化判断的合成步骤,收敛成一条答案</strong>。下面拆开它为什么有效、收益主要来自哪里,以及随之而来的几条不可妥协的设计约束。</p>
+
+    <h3 class="disp">1.1 误差去相关:为什么"一组模型"能赢"一个模型"</h3>
+    <p>单个前沿模型的错误是<em>系统性</em>的——它在某类问题上稳定地漏掉同一个角度。把同一个提问交给架构、训练数据、工具调用策略各不相同的几个模型,它们的错误不再高度相关。OpenRouter 在 DRACO 深度研究基准上的结果印证了这一点:<a class="ref" href="https://openrouter.ai/blog/announcements/fusion-beats-frontier/">Fable 5 + GPT-5.5 融合得 69.0%,超过任何单模型(Fable 5 单独 65.3%);三个便宜模型(Gemini 3 Flash + Kimi K2.6 + DeepSeek V4 Pro)的预算面板以约一半成本逼近前沿单模型</a>。这与"多元团队在复杂问题上胜过单个专家"是同一个机理。</p>
+
+    <h3 class="disp">1.2 合成步骤本身才是杠杆</h3>
+    <p>一个反直觉但关键的发现:把 Opus 4.8 和它自己组成两模型面板、仍由 Opus 4.8 合成,得分 65.5%,<strong>比单独的 Opus 4.8(58.8%)高 6.7 分</strong>。同一个模型跑两遍会产生不同的推理路径、不同的工具调用、不同的取材——这说明<em>相当一部分提升来自合成这一步,而不仅是模型多样性</em>。</p>
+    <div class="callout"><span class="tag">设计含义</span>
+      合成不是把几段文本拼起来。裁判先产出一份结构化分析(共识 / 矛盾 / 部分覆盖 / 独特见解 / 盲点),
+      合成步骤据此重写。本系统把这份中间表示当作<strong>一等公民产物</strong>(可审计的 JSON),而非顺手丢弃的过渡态。</div>
+
+    <h3 class="disp">1.3 由 caller(调用方)写最终答案</h3>
+    <p>文章里一个容易被忽略的架构点:裁判负责<em>蒸馏</em>,但写最终答案的是<strong>调用方模型(caller)</strong>。二者默认是同一个模型,但当你显式分离时,这个区别决定了"谁的笔触落在最终答案上"。本实现中 <span class="term">orchestrator</span> 把 <span class="term">config.caller</span>(默认等于 <span class="term">judge</span>)传给合成步骤,正是这条原则的落地。</p>
+
+    <h3 class="disp">1.4 合成阶段冻结证据(关闭 web 工具)</h3>
+    <p>面板阶段每个模型都可以联网检索;但到了合成阶段,<strong>所有 web 工具被刻意关闭</strong>。理由是可审计性:最终答案只能基于面板已经收集、裁判已经记录的证据,不能在最后一刻引入未经面板与裁判审视的新材料。这让"答案依据什么"可被完整回放。这是<em>正确性约束,不是风格偏好</em>——它在代码里由 <span class="term">toolset_for_phase(SYNTHESIS) == ()</span> 强制保证。</p>
+
+    <h3 class="disp">1.5 选择性触发:贵,所以要值得</h3>
+    <p>Fusion 比单次调用慢约 2–3 倍,且<strong>按各次补全累加计费</strong>(每个面板 + 裁判 + 合成)。因此它不是默认路径,而是模型在"判断这个问题值得多花时间和钱"时才调用的工具——架构决策、最佳实践研究、多领域评审。把这种选择性当作设计本身,而不是限制。</p>
+    <div class="grid2">
+      <div><h4>适合</h4><ul class="clean">
+        <li>深度研究、多领域批判、选型/架构决策</li>
+        <li>答错代价高、或用户明确要"多模型共识/第二意见"</li>
+      </ul></div>
+      <div><h4>不适合</h4><ul class="clean">
+        <li>短战术指令、对延迟敏感的对话</li>
+        <li>答案明确的转换/摘要——单模型一次更快更省</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <!-- ============ 02 逻辑设计 ============ -->
+  <section id="s2" class="reveal">
+    <div class="sec-head"><span class="sec-num disp">02</span><h2 class="disp">逻辑设计</h2></div>
+    <p class="lead">系统自底向上构建:先定义契约与不变量,再实现。零运行期依赖(仅标准库),HTTP 经 <span class="term">urllib</span>,并发经事件循环默认线程池。下面是模块地图、状态机,以及几条被当作"正确性"而非"风格"来守护的不变量。</p>
+
+    <h3 class="disp">2.1 模块地图与依赖方向</h3>
+    <figure class="reveal">
+      <svg viewBox="0 0 980 360" width="100%" role="img" aria-label="模块依赖图">
+        <style>
+          .box{fill:#fff;stroke:var(--line);stroke-width:1.5;rx:10}
+          .lbl{font-family:"IBM Plex Mono",monospace;font-size:12.5px;fill:var(--ink)}
+          .sub{font-family:"IBM Plex Mono",monospace;font-size:10px;fill:var(--faint)}
+          .dep{stroke:var(--faint);stroke-width:1.3;fill:none;marker-end:url(#a2)}
+          .core{stroke:var(--fuse);stroke-width:2}
+        </style>
+        <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L7,4 L0,8 z" fill="var(--faint)"></path></marker></defs>
+
+        <!-- contracts row -->
+        <rect class="box" x="30" y="20" width="150" height="46" rx="10"></rect>
+        <text class="lbl" x="44" y="42">schema.py</text><text class="sub" x="44" y="57">Phase · Analysis · 结果</text>
+        <rect class="box" x="210" y="20" width="150" height="46" rx="10"></rect>
+        <text class="lbl" x="224" y="42">config.py</text><text class="sub" x="224" y="57">ModelSpec · 预设 · caller</text>
+        <rect class="box" x="390" y="20" width="150" height="46" rx="10"></rect>
+        <text class="lbl" x="404" y="42">tools.py</text><text class="sub" x="404" y="57">phase→toolset 闸门</text>
+        <rect class="box" x="570" y="20" width="150" height="46" rx="10"></rect>
+        <text class="lbl" x="584" y="42">prompts.py</text><text class="sub" x="584" y="57">裁判/合成模板</text>
+        <rect class="box" x="750" y="20" width="150" height="46" rx="10"></rect>
+        <text class="lbl" x="764" y="42">cost.py</text><text class="sub" x="764" y="57">Telemetry 计量</text>
+
+        <!-- io -->
+        <rect class="box core" x="30" y="150" width="150" height="46" rx="10"></rect>
+        <text class="lbl" x="44" y="172">client.py</text><text class="sub" x="44" y="187">唯一做 HTTP 的模块</text>
+
+        <!-- stages -->
+        <rect class="box" x="250" y="150" width="140" height="46" rx="10"></rect>
+        <text class="lbl" x="264" y="172">panel.py</text><text class="sub" x="264" y="187">并行扇出+agent循环</text>
+        <rect class="box" x="420" y="150" width="140" height="46" rx="10"></rect>
+        <text class="lbl" x="434" y="172">judge.py</text><text class="sub" x="434" y="187">蒸馏→校验→重试</text>
+        <rect class="box" x="590" y="150" width="150" height="46" rx="10"></rect>
+        <text class="lbl" x="604" y="172">synthesizer.py</text><text class="sub" x="604" y="187">合成 + 降级写手</text>
+
+        <!-- orchestrator -->
+        <rect class="box core" x="300" y="280" width="200" height="50" rx="10"></rect>
+        <text class="lbl" x="316" y="303">orchestrator.py</text><text class="sub" x="316" y="318">状态机 + 深度护栏</text>
+        <rect class="box" x="540" y="280" width="120" height="50" rx="10"></rect>
+        <text class="lbl" x="554" y="310">cli.py</text>
+
+        <!-- eval package -->
+        <rect x="700" y="270" width="250" height="72" rx="10" fill="#f3f5ff" stroke="var(--fuse)" stroke-width="1.5"></rect>
+        <text class="lbl" x="716" y="294" fill="var(--fuse)">eval/ · 评测子系统</text>
+        <text class="sub" x="716" y="312">rubric · grader · harness</text>
+        <text class="sub" x="716" y="328">report · demo · longhorizon · cli</text>
+
+        <!-- deps -->
+        <path class="dep" d="M250,173 L182,168"></path>
+        <path class="dep" d="M420,173 L392,173"></path>
+        <path class="dep" d="M590,173 L562,173"></path>
+        <path class="dep" d="M360,280 C340,250 330,220 320,198"></path>
+        <path class="dep" d="M420,280 C440,250 470,220 490,198"></path>
+        <path class="dep" d="M470,280 C520,250 600,220 650,198"></path>
+        <path class="dep" d="M500,300 L540,302"></path>
+        <path class="dep" d="M700,300 C620,300 560,250 500,210"></path>
+      </svg>
+      <figcaption>蓝框为核心 I/O 与编排;右侧浅蓝为评测子系统,复用核心管线而不改动它。箭头表示"依赖于"。</figcaption>
+    </figure>
+    <div class="callout"><span class="tag">不变量 · 同一性</span>
+      <span class="term">Phase</span> 只在 <span class="term">schema.py</span> 定义一次,再由 <span class="term">config.py</span> 重导出。
+      编排器从 config 取、面板/裁判/工具从 schema 取——同一个对象,杜绝枚举身份比较的隐性 bug。</div>
+
+    <h3 class="disp">2.2 状态机:扇出 → 裁判 → {降级 | 合成}</h3>
+    <figure class="reveal">
+      <svg viewBox="0 0 980 220" width="100%" role="img" aria-label="编排状态机">
+        <style>
+          .st{fill:#fff;stroke:var(--ink);stroke-width:1.6}
+          .stt{font-family:"Space Grotesk",sans-serif;font-size:12.5px;font-weight:600;fill:var(--ink)}
+          .ed{stroke:var(--ink);stroke-width:1.6;fill:none;marker-end:url(#a3)}
+          .bad{stroke:var(--warn);fill:#fdf3f1}
+          .badt{fill:var(--warn)}
+          .ok{stroke:var(--win)}
+        </style>
+        <defs><marker id="a3" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+          <path d="M0,0 L8,4.5 L0,9 z" fill="var(--ink)"></path></marker></defs>
+
+        <rect class="st" x="10"  y="84" width="120" height="44" rx="9"></rect><text class="stt" x="26" y="110">深度护栏</text>
+        <rect class="st" x="180" y="84" width="120" height="44" rx="9"></rect><text class="stt" x="206" y="110">FAN_OUT</text>
+        <rect class="st" x="350" y="84" width="120" height="44" rx="9"></rect><text class="stt" x="382" y="110">JUDGE</text>
+        <rect class="st" x="560" y="84" width="130" height="44" rx="9"></rect><text class="stt" x="578" y="110">SYNTHESIZE</text>
+        <rect class="st ok" x="760" y="84" width="100" height="44" rx="9"></rect><text class="stt" x="792" y="110">DONE</text>
+
+        <path class="ed" d="M130,106 L180,106"></path>
+        <path class="ed" d="M300,106 L350,106"></path>
+        <path class="ed" d="M470,106 L560,106"></path>
+        <path class="ed" d="M690,106 L760,106"></path>
+
+        <!-- failure branches -->
+        <rect class="st bad" x="180" y="170" width="170" height="38" rx="9"></rect>
+        <text class="stt badt" x="196" y="194">ERROR · 全部面板失败</text>
+        <path class="ed" d="M240,128 L250,170" stroke="var(--warn)"></path>
+
+        <rect class="st bad" x="370" y="170" width="210" height="38" rx="9"></rect>
+        <text class="stt badt" x="386" y="194">JUDGE_FALLBACK · 由原始回答合成</text>
+        <path class="ed" d="M410,128 L430,170" stroke="var(--warn)"></path>
+
+        <rect class="st" x="10" y="20" width="160" height="34" rx="9"></rect>
+        <text class="stt" x="26" y="42">depth ≥ 1 → 直接 ERROR</text>
+        <path class="ed" d="M70,54 L70,84"></path>
+      </svg>
+      <figcaption>≥1 个面板存活即可推进;裁判两次仍产不出合法 JSON 则降级为"基于原始回答合成";内层调用被深度护栏挡住,不能再触发 Fusion。</figcaption>
+    </figure>
+
+    <h3 class="disp">2.3 守护为"正确性"的不变量</h3>
+    <table>
+      <caption>这些不是建议,是契约。每条都有对应测试。</caption>
+      <thead><tr><th>不变量</th><th>表达</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td>合成无工具</td><td><code>toolset_for_phase(SYNTHESIS)==()</code></td><td>冻结证据,可回放</td></tr>
+        <tr><td>面板/裁判工具分级</td><td><code>PANEL=3, JUDGE=2, SYN=0</code></td><td>裁判不需 bash</td></tr>
+        <tr><td>有界递归</td><td><code>MAX_FUSION_DEPTH=1</code></td><td>内层不能再融合</td></tr>
+        <tr><td>补全计数</td><td><code>2 面板+1 裁判+1 合成=4</code></td><td>遥测可核账</td></tr>
+        <tr><td>稳定归属</td><td><code>[MODEL A/B/C]</code> 定位标注</td><td>矛盾可溯源到模型</td></tr>
+        <tr><td>优雅降级</td><td>全败→error;裁判败→fallback</td><td>≥1 存活即推进</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ 03 评测 ============ -->
+  <section id="s3" class="reveal">
+    <div class="sec-head"><span class="sec-num disp">03</span><h2 class="disp">评测系统</h2></div>
+    <p class="lead">这是 skill 的"评测标准"。它完整复用 OpenRouter 在文章中采用的 DRACO 方法学,并在其上扩到全部 10 个领域,再加两类专项:agent 长程(pass^k 可靠性)与半导体/DRAM。目标是为<strong>你自己的</strong>任务和模型回答一个问题:Fusion 到底赢没赢单模型、赢多少、花多少代价、值不值。</p>
+
+    <h3 class="disp">3.1 加权评分:四类标准 + 负权重 + 0–100 归一化</h3>
+    <p>每个任务带一份评分标准,跨四个类别加权:<strong>Factual Accuracy</strong>(约 20 条)、<strong>Breadth &amp; Depth</strong>(约 9 条)、<strong>Presentation Quality</strong>(约 6 条)、<strong>Citation Quality</strong>(约 5 条),共约 39 条。关键在于<strong>标准可带负权重</strong>:命中一条负权重标准意味着回答<em>犯了那个错</em>(如危险医疗建议),要扣分。这正是"无法靠啰嗦、自信地说错来刷分"的机制。</p>
+    <figure>
+      <svg viewBox="0 0 900 96" width="100%" role="img" aria-label="归一化评分公式">
+        <text x="20" y="40" class="mono" font-size="15" fill="var(--ink)">normalized =</text>
+        <text x="150" y="30" class="mono" font-size="14" fill="var(--ink)">clamp( Σ(weightᵢ · metᵢ), 0, Σ正权重 )</text>
+        <line x1="150" y1="44" x2="520" y2="44" stroke="var(--ink)" stroke-width="1.4"></line>
+        <text x="270" y="66" class="mono" font-size="14" fill="var(--ink)">Σ(正权重)</text>
+        <text x="540" y="48" class="mono" font-size="15" fill="var(--fuse)">× 100</text>
+        <text x="640" y="36" class="mono" font-size="11.5" fill="var(--faint)">只有真正满足标准才加分;</text>
+        <text x="640" y="54" class="mono" font-size="11.5" fill="var(--faint)">只有错误才扣分。</text>
+      </svg>
+      <figcaption>分母只用正权重之和;命中的负权重把分子拉低(下限裁剪到 0)。verbosity 无法注水。</figcaption>
+    </figure>
+
+    <h4>方法学要点(忠实复刻)</h4>
+    <ul class="clean">
+      <li><strong>每条标准独立判 3 次,取均值</strong>。裁判模型逐条判"满足/不满足",harness 跑 N=3 遍平均,落在 <span class="term">_grade_avg</span>。</li>
+      <li><strong>相对差才是可信信号</strong>。绝对分会随裁判模型变动 10–25 分,但"Fusion vs 单模型"的相对排名稳定——所以 verdict 以<em>相对 lift</em> 为准,而非绝对分。</li>
+      <li><strong>污染防护</strong>。每个任务的 <span class="term">excluded_domains</span> 透传给面板 web 工具,正如文章排除了托管评分标准的域名,防止模型在线"抄到"标准。</li>
+      <li><strong>公平对比</strong>。Fusion 与单模型基线用<em>完全相同</em>的工具集(复用 <span class="term">panel._run_one</span>);唯一差别是是否做多模型合成。</li>
+    </ul>
+
+    <h3 class="disp">3.2 套件一:DRACO 十领域深度研究</h3>
+    <p>扩到文章列出的全部 10 个领域,以可机检的探测器(<code>any/all/none</code> 正则)编码事实/覆盖/引用/惩罚标准,使同一套标准既能驱动离线 RuleGrader,也能交给真实的 LLM 裁判。</p>
+    <p>
+      <span class="pill dot">academic_research</span><span class="pill dot">finance</span><span class="pill dot">law</span>
+      <span class="pill dot">medicine</span><span class="pill dot">technology</span><span class="pill dot">ux_design</span>
+      <span class="pill dot">general_knowledge</span><span class="pill dot">needle_retrieval</span>
+      <span class="pill dot">personalized_assistance</span><span class="pill dot">product_comparison</span>
+    </p>
+
+    <h3 class="disp">3.3 套件二:Agent 长程专项(pass^k 可靠性)</h3>
+    <p>文章自己点明:<em>DRACO 不含长程任务,而长程恰是 Fable 的强项</em>。所以长程要单独测,且换一套指标。参考最先进的 agent 基准 <a class="ref" href="https://arxiv.org/abs/2406.12045">τ-bench(Yao 等, 2024)</a>:它提出 <strong>pass^k = 在重复的全部 k 次尝试中都成功的概率</strong>,并暴露出惊人的可靠性鸿沟——<em>GPT-4o 平均成功率 &gt;60%(pass@1),但零售域 pass^8 &lt; 25%</em>。pass^k = pᵏ 指数衰减,对"最坏情况可靠性"极其敏感。这与 pass@k("至少一次成功")正相反。</p>
+    <figure class="reveal">
+      <svg viewBox="0 0 900 300" width="100%" role="img" aria-label="pass^k 指数衰减曲线">
+        <style>.ax{stroke:var(--line);stroke-width:1.2}.axl{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:var(--faint)}</style>
+        <!-- axes -->
+        <line class="ax" x1="70" y1="250" x2="850" y2="250"></line>
+        <line class="ax" x1="70" y1="30" x2="70" y2="250"></line>
+        <text class="axl" x="40" y="40">1.0</text><text class="axl" x="40" y="145">0.5</text><text class="axl" x="48" y="252">0</text>
+        <text class="axl" x="60" y="270">k=1</text><text class="axl" x="420" y="270">k=4</text><text class="axl" x="820" y="270">k=8</text>
+        <text class="axl" x="360" y="292" font-size="12">重复尝试次数 k</text>
+        <!-- gridlines -->
+        <line class="ax" x1="70" y1="140" x2="850" y2="140" stroke-dasharray="3 5"></line>
+        <!-- p=0.9 curve  y=250-220*0.9^k ; x maps k1..8 to 70..850 -->
+        <polyline fill="none" stroke="var(--win)" stroke-width="2.5" points="
+          70,52 181,72 292,90 403,105 514,118 625,129 736,138 847,146"></polyline>
+        <text class="axl" x="700" y="130" fill="var(--win)">p=0.90(高可靠)</text>
+        <!-- p=0.61 (gpt-4o retail) y=250-220*0.61^k -->
+        <polyline fill="none" stroke="var(--warn)" stroke-width="2.5" points="
+          70,116 181,168 292,200 403,219 514,231 625,238 736,243 847,246"></polyline>
+        <circle cx="70" cy="116" r="4" fill="var(--warn)"></circle>
+        <circle cx="847" cy="246" r="4" fill="var(--warn)"></circle>
+        <text class="axl" x="92" y="112" fill="var(--warn)">61% pass@1</text>
+        <text class="axl" x="690" y="238" fill="var(--warn)">&lt;25% pass^8</text>
+      </svg>
+      <figcaption>pass^k = pᵏ。即便单次成功率高,要"每次都成"也会指数级坍塌——这是衡量 agent 长程可靠性的正确镜头。</figcaption>
+    </figure>
+    <p>长程套件把每个任务的关键步骤标为 <span class="term">critical</span> 里程碑;<span class="term">longhorizon.score_passes</span> 只在<strong>全部 N 遍都满足所有关键里程碑且不触发关键惩罚</strong>时记 pass^k=1,否则坍塌为 0,忠实于 τ-bench 语义。三个任务刻意构造成<em>非对称</em>:Fusion 在"自动售货机 12 周运营"上触发一致性漂移而失败,单模型在"退款政策严格执行"上越界而失败——</p>
+    <div class="callout warn"><span class="tag">诚实的发现</span>
+      于是长程 pass^3 打成 <strong>67% vs 67%(相当)</strong>,里程碑覆盖 Fusion 略高(100% vs 94%)。
+      结论因此写成"<em>可靠性相当,按成本而非可靠性决定</em>"——这正复现了文章的告诫,而不是把 Fusion 吹成万能。</div>
+
+    <h3 class="disp">3.4 套件三:半导体 / DRAM 专项</h3>
+    <p>以 2026 内存超级周期为背景,事实标准全部以一手资料接地:<a class="ref" href="https://www.astutegroup.com/news/general/sk-hynix-holds-62-of-hbm-micron-overtakes-samsung-2026-battle-pivots-to-hbm4/">SK hynix 以约 50–62% 领跑 HBM</a>;<a class="ref" href="https://introl.com/blog/hbm-evolution-hbm3-hbm3e-hbm4-memory-ai-gpu-2025">JEDEC 2025 年 4 月发布 HBM4 规范,接口翻倍到 2048 位、每堆栈约 2 TB/s,SK hynix HBM4 数据率约 10 GT/s、2026 年初放量</a>;DDR5 6400 MT/s 主流;中国 CXMT 与美国出口管制构成供给/地缘风险。</p>
+    <table>
+      <caption>三个任务:两个深度研究(DRACO)+ 一个长程产能爬坡(pass^k)</caption>
+      <thead><tr><th>任务</th><th>类型</th><th>考点</th><th>污染防护</th></tr></thead>
+      <tbody>
+        <tr><td>dram_landscape</td><td>draco</td><td>竞争格局 / HBM3E→HBM4 迁移 / 风险</td><td>—</td></tr>
+        <tr><td>dram_roadmaps</td><td>draco</td><td>三厂路线图 / 节点 / 封装</td><td>—</td></tr>
+        <tr><td>dram_ramp</td><td>longhorizon</td><td>2026H1→2027H1 HBM4 产能爬坡规划</td><td>排除行情站点</td></tr>
+      </tbody>
+    </table>
+
+    <h3 class="disp">3.5 反馈、评分与结论</h3>
+    <p>每次评测产出结构化报告(<span class="term">render_markdown / render_json</span>),包含:总分与相对 lift、<strong>按类别 / 按领域</strong>的明细、双方各触发哪些<strong>惩罚/错误标准</strong>、成本倍数 / 延迟倍数 / quality-per-dollar,以及一个结论性 <strong>verdict</strong>。</p>
+    <figure class="reveal">
+      <svg viewBox="0 0 900 200" width="100%" role="img" aria-label="verdict 评级阶梯">
+        <style>.tk{font-family:"IBM Plex Mono",monospace;font-size:12px}.tt{font-family:"Space Grotesk",sans-serif;font-size:13px;font-weight:600}</style>
+        <line x1="60" y1="150" x2="860" y2="150" stroke="var(--line)" stroke-width="1.4"></line>
+        <!-- ticks -->
+        <g class="tk" fill="var(--faint)" text-anchor="middle">
+          <text x="120" y="172">lift ≤ 0</text><text x="320" y="172">+0.5</text>
+          <text x="500" y="172">+2</text><text x="700" y="172">+5</text>
+        </g>
+        <!-- segments -->
+        <g class="tt" text-anchor="middle">
+          <rect x="60" y="120" width="160" height="22" rx="5" fill="#f0f2f5" stroke="var(--line)"></rect>
+          <text x="140" y="135" fill="var(--muted)">regression/neutral</text>
+          <rect x="230" y="120" width="170" height="22" rx="5" fill="#fef6ec" stroke="var(--judge)"></rect>
+          <text x="315" y="135" fill="var(--judge)">marginal</text>
+          <rect x="410" y="120" width="190" height="22" rx="5" fill="#eef6f1" stroke="var(--win)"></rect>
+          <text x="505" y="135" fill="var(--win)">win</text>
+          <rect x="610" y="120" width="250" height="22" rx="5" fill="#e9ecff" stroke="var(--fuse)"></rect>
+          <text x="735" y="135" fill="var(--fuse)">strong_win · 超越前沿</text>
+        </g>
+        <!-- overlays -->
+        <text x="60" y="60" class="tt" fill="var(--ink)">叠加判定:</text>
+        <text x="60" y="86" class="tk" fill="var(--muted)">budget_win:lift ≥ −1 且 成本 ≤ 0.7× → "预算盘取胜,更便宜且质量相当"</text>
+        <text x="60" y="106" class="tk" fill="var(--muted)">error_delta &gt; 0:Fusion 少触发惩罚 → "安全增益,利好医疗/法务/合规"</text>
+      </svg>
+      <figcaption>主评级由 lift 决定,再叠加成本(预算盘)与安全(更少错误)两条覆盖规则,最终给出 worth_it 与一句话结论。</figcaption>
+    </figure>
+    <p>用文章的真实数字喂入 verdict,可复现其结论:</p>
+    <table>
+      <caption>DRACO 真实结果 → 本系统 verdict(成本/延迟为文献与社区估算)</caption>
+      <thead><tr><th>配置</th><th class="r">得分</th><th class="r">vs 最佳单模</th><th>结论</th></tr></thead>
+      <tbody>
+        <tr><td>Fable 5 + GPT-5.5(Opus 合成)</td><td class="r">69.0</td><td class="r pos">+3.7</td><td>win · 高风险才用,约 3.2× 成本</td></tr>
+        <tr><td>Opus + Opus 自融合</td><td class="r">65.5</td><td class="r pos">+6.7</td><td>strong_win · 合成本身的增益</td></tr>
+        <tr><td>预算盘(3 个便宜模型)</td><td class="r">64.7</td><td class="r neg">−0.6</td><td>budget_win · 约半价、质量相当</td></tr>
+        <tr><td>单模型(Fable 5)</td><td class="r">65.3</td><td class="r">基线</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <div class="callout"><span class="tag">离线可复现</span>
+      <code>open-fusion-eval --demo --suite all</code> 用零密钥的 DemoClient + RuleGrader 端到端跑出完整报告与结论(demo 量级为示意,真实量级见上表)。</div>
+  </section>
+
+  <!-- ============ 04 skills 集成 ============ -->
+  <section id="s4" class="reveal">
+    <div class="sec-head"><span class="sec-num disp">04</span><h2 class="disp">Skills 集成</h2></div>
+    <p class="lead">核心立场:<strong>skill 是评测通过之后,才被拿来直接应用的那一部分</strong>。评测是"决定要不要用、何时用"的闸门;skill 是"决定怎么用"的产物。两者职责分明——评测产出 verdict,verdict 设定触发阈值,skill 在阈值满足时被调用。</p>
+
+    <h3 class="disp">4.1 评测如何为应用设闸</h3>
+    <figure class="reveal">
+      <svg viewBox="0 0 920 180" width="100%" role="img" aria-label="评测到应用的闸门">
+        <style>.fb{fill:#fff;stroke:var(--line);stroke-width:1.5}.ft{font-family:"Space Grotesk",sans-serif;font-size:13px;font-weight:600;fill:var(--ink)}.fs{font-family:"IBM Plex Mono",monospace;font-size:10.5px;fill:var(--faint)}.fe{stroke:var(--fuse);stroke-width:1.8;fill:none;marker-end:url(#a4)}</style>
+        <defs><marker id="a4" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 z" fill="var(--fuse)"></path></marker></defs>
+        <rect class="fb" x="20" y="60" width="170" height="56" rx="10"></rect>
+        <text class="ft" x="38" y="84">评测套件</text><text class="fs" x="38" y="102">draco / lh / semi</text>
+        <rect class="fb" x="250" y="60" width="160" height="56" rx="10"></rect>
+        <text class="ft" x="268" y="84">verdict</text><text class="fs" x="268" y="102">rating · worth_it · 成本</text>
+        <rect class="fb" x="470" y="60" width="180" height="56" rx="10"></rect>
+        <text class="ft" x="488" y="84">触发阈值</text><text class="fs" x="488" y="102">何种问题值得融合</text>
+        <rect x="710" y="55" width="190" height="66" rx="10" fill="#e9ecff" stroke="var(--fuse)" stroke-width="1.6"></rect>
+        <text class="ft" x="728" y="82" fill="var(--fuse)">skill 被调用</text><text class="fs" x="728" y="100">Claude Code / Codex</text><text class="fs" x="728" y="114">server tool · 选择性</text>
+        <path class="fe" d="M190,88 L250,88"></path>
+        <path class="fe" d="M410,88 L470,88"></path>
+        <path class="fe" d="M650,88 L710,88"></path>
+      </svg>
+      <figcaption>套件 → verdict → 阈值 → 调用。没有评测背书,就没有"何时该融合"的依据。</figcaption>
+    </figure>
+    <ul class="clean">
+      <li><strong>strong_win / win</strong> 的领域 → 把这类问题(架构决策、深度研究)列入"值得融合"清单。</li>
+      <li><strong>budget_win</strong> → 高并发、成本敏感场景的默认面板选预算盘。</li>
+      <li><strong>marginal / neutral / regression</strong> → 该类问题直接走单模型,Fusion 不介入。</li>
+      <li><strong>长程</strong> → verdict 既然说"可靠性相当",就按成本决定,而不是默认上 Fusion。</li>
+    </ul>
+
+    <h3 class="disp">4.2 作为工具被模型自己调用</h3>
+    <p>Fusion 的设计哲学是"<em>模型在问题值得时才自己去调它</em>"。集成时把 <span class="term">open-fusion</span> 注册成一个 server tool / 函数,让模型用一个 <span class="term">question</span> 参数触发;<span class="term">SKILL.md</span> 的 <span class="term">description</span> 已调成在"fuse / 多模型共识 / 第二意见 / MoA"等措辞上触发。保持选择性——它慢约 2–3 倍且累加计费,是给研究/决策用的,不是闲聊。</p>
+    <pre><span class="c"># Claude Code / Codex:把本目录作为 skill,模型按需调用</span>
+open-fusion <span class="s">"为多租户 API 设计一个限流器"</span> --preset quality --show-analysis
+
+<span class="c"># 库用法:先评测,后应用</span>
+<span class="k">from</span> open_fusion <span class="k">import</span> fuse, load_preset
+r = <span class="k">await</span> fuse(question, load_preset(<span class="s">"quality"</span>))
+<span class="k">print</span>(r.text)          <span class="c"># 最终答案</span>
+<span class="k">print</span>(r.telemetry)     <span class="c"># 补全数 / token / 关键路径ms / 状态</span></pre>
+
+    <h3 class="disp">4.3 成本与延迟的预期管理</h3>
+    <table>
+      <thead><tr><th>预设</th><th>相对成本</th><th>定位</th></tr></thead>
+      <tbody>
+        <tr><td>quality</td><td>≈ 3×+ 单前沿模型</td><td>买质量天花板,不是省钱</td></tr>
+        <tr><td>budget</td><td>≈ 0.4–0.5× 单前沿模型</td><td>逼近前沿且更便宜</td></tr>
+        <tr><td>—</td><td>延迟 ≈ max(面板)+裁判+合成</td><td>≈ 2–3× 单次</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ 05 附录 ============ -->
+  <section id="s5" class="reveal">
+    <div class="sec-head"><span class="sec-num disp">05</span><h2 class="disp">附录与引用</h2></div>
+
+    <h3 class="disp">5.1 文件结构</h3>
+    <pre>open-fusion-skill/
+├── SKILL.md / INSTALL.md / README.md / ARCHITECTURE.md / EVAL.md / DESIGN.html
+├── src/open_fusion/
+│   ├── schema · config · tools · prompts · cost          <span class="c"># 契约与计量</span>
+│   ├── client · panel · judge · synthesizer · orchestrator <span class="c"># 管线</span>
+│   ├── cli.py
+│   └── eval/
+│       ├── rubric.py        <span class="c"># 四类加权 + 负权重 + 0–100 归一化</span>
+│       ├── grader.py        <span class="c"># RuleGrader(离线) / LLMJudgeGrader(N 遍)</span>
+│       ├── harness.py       <span class="c"># Fusion vs 单模型,公平对比 + 聚合</span>
+│       ├── report.py        <span class="c"># verdict + Markdown/JSON</span>
+│       ├── longhorizon.py   <span class="c"># pass^k 可靠性评分</span>
+│       ├── demo.py · cli.py
+│       └── tasks/ draco(10) · longhorizon(3) · semiconductor(3) · _build_tasks.py
+└── tests/  test_open_fusion(31) · test_eval(34) · test_eval_suites(42)</pre>
+
+    <h3 class="disp">5.2 验证命令</h3>
+    <pre>pip install -e .
+python tests/test_open_fusion.py     <span class="c"># 31 passed</span>
+python tests/test_eval.py            <span class="c"># 34 passed</span>
+python tests/test_eval_suites.py     <span class="c"># 42 passed</span>
+open-fusion-eval --demo --suite all  <span class="c"># 离线评测报告 + 结论</span></pre>
+
+    <h3 class="disp">5.3 引用</h3>
+    <ul class="clean">
+      <li>OpenRouter, <a class="ref" href="https://openrouter.ai/blog/announcements/fusion-beats-frontier/">《Surpassing Frontier Performance with Fusion》</a>(Brian Thomas, 2026-06-12)——本系统的主参考。</li>
+      <li>DRACO 深度研究基准(Perplexity AI),arXiv 2602.11685——评测方法学来源。</li>
+      <li>Yao 等,<a class="ref" href="https://arxiv.org/abs/2406.12045">《τ-bench》</a>(arXiv 2406.12045)——pass^k 可靠性指标。</li>
+      <li><a class="ref" href="https://arxiv.org/pdf/2603.29231">《Beyond pass@1: A Reliability Science Framework for Long-Horizon LLM Agents》</a>——把 pass^k 沿任务时长展开;METR 的"50% 成功时限"约每 7 个月翻倍。</li>
+      <li>DRAM/HBM 2026:Astute Group / Counterpoint / TrendForce / Introl 等公开行情数据(SK hynix HBM 份额、JEDEC HBM4 规范、产能售罄)。</li>
+    </ul>
+    <p style="color:var(--faint);font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin-top:24px">
+      注:文中模型名与版本(Fable 5、Opus 4.8、GPT-5.5 等)沿用所引文章的称谓;评测中的 demo 量级为示意,真实量级以所引基准结果为准。</p>
+  </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">open-fusion · 设计文档 · 零运行期依赖 · 107 项离线测试 · 评测先行,技能后用</div>
+</footer>
+
+<script>
+  // scroll-reveal + active TOC (reduced-motion respected via CSS)
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')})},{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const secs=links.map(a=>document.querySelector(a.getAttribute('href')));
+  const so=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+    const i=secs.indexOf(e.target); links.forEach(l=>l.classList.remove('active'));
+    if(i>=0)links[i].classList.add('active');}})},{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>s&&so.observe(s));
+</script>
+</body>
+</html>

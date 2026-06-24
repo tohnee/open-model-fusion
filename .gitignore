@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# Secrets / local config
+.env
+.env.local
+*.local
+secrets.yaml
+
+# Build / coverage artifacts
+htmlcov/
+.coverage
+coverage.xml
+.tox/
+
+# Open-fusion skill local artifacts
+.fusion_cache/

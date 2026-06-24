@@ -1,0 +1,82 @@
+{
+  "_about": "DRACO-STYLE SAMPLE TASKS (not the real DRACO set, which is external). Each task carries a weighted rubric across the four DRACO categories (factual_accuracy, breadth_depth, presentation, citation) including negative-weight penalty criteria. `check` rules let the offline RuleGrader score deterministically; for real evaluation use the LLM judge grader. `demo` answers power the zero-key `--demo` run. To benchmark for real, replace this file with DRACO tasks and grade with --grader llm.",
+  "tasks": [
+    {
+      "id": "fin1",
+      "domain": "finance",
+      "prompt": "Compare index funds versus actively managed funds for a long-term retail investor saving for retirement. Cover costs, expected performance, tax effects, and give a recommendation.",
+      "excluded_domains": ["draco-rubric.example.com"],
+      "rubric": [
+        {"id": "f1", "category": "factual_accuracy", "weight": 3, "description": "Notes index funds have lower expense ratios/fees", "check": {"all": ["index"], "any": ["expense ratio", "fees", "lower cost"]}},
+        {"id": "f2", "category": "factual_accuracy", "weight": 3, "description": "States most active funds underperform their index over long horizons", "check": {"any": ["underperform", "fail to beat", "rarely beat"]}},
+        {"id": "f3", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: claims active funds reliably/always beat the market", "check": {"any": ["always outperform", "reliably beat the market", "guaranteed higher returns"]}},
+        {"id": "bd1", "category": "breadth_depth", "weight": 2, "description": "Discusses tax efficiency / capital gains trade-off", "check": {"any": ["tax efficiency", "tax-efficient", "capital gains"]}},
+        {"id": "bd2", "category": "breadth_depth", "weight": 2, "description": "Gives actionable guidance for most investors", "check": {"any": ["for most", "recommend", "default choice"]}},
+        {"id": "p1", "category": "presentation", "weight": 1, "description": "Clear structure (lists/sections)", "check": {"any": ["- ", "1.", "Summary"]}},
+        {"id": "c1", "category": "citation", "weight": 2, "description": "Includes a working reference URL", "check": {"any": ["https://", "http://"]}}
+      ],
+      "demo": {
+        "panel": "Index funds usually have lower fees; active funds rarely beat the index.",
+        "fused": "For most long-term retirement investors, low-cost index funds are the default choice.\n- Costs: index funds have far lower expense ratios and fees than active funds.\n- Performance: the large majority of active funds underperform their benchmark index over long horizons.\n- Taxes: index funds are more tax-efficient, generating fewer taxable capital gains.\n- Recommendation: index funds for the core; consider active only in genuinely inefficient niches.\nSource: https://example.org/spiva-report",
+        "baseline": "Actively managed funds reliably beat the market with expert stock picking, so they are worth the higher fees for index investors. Active funds always outperform over time.\n- They have lower cost expense ratio tiers for big accounts."
+      }
+    },
+    {
+      "id": "med1",
+      "domain": "medicine",
+      "prompt": "What is the typical first-line management approach for newly diagnosed type 2 diabetes in adults, and what key safety cautions should be communicated?",
+      "excluded_domains": ["draco-rubric.example.com"],
+      "rubric": [
+        {"id": "m1", "category": "factual_accuracy", "weight": 3, "description": "Identifies metformin as typical first-line pharmacotherapy", "check": {"any": ["metformin"]}},
+        {"id": "m2", "category": "factual_accuracy", "weight": 3, "description": "Emphasizes lifestyle (diet/exercise/weight)", "check": {"any": ["lifestyle", "diet and exercise", "weight loss"]}},
+        {"id": "m3", "category": "factual_accuracy", "weight": -8, "description": "PENALTY: gives unsafe advice (e.g., stop insulin abruptly, ignore clinician)", "check": {"any": ["stop taking insulin", "ignore your doctor", "double the dose on your own"]}},
+        {"id": "bd1", "category": "breadth_depth", "weight": 2, "description": "Notes individualization / comorbidities (renal, CV)", "check": {"any": ["individual", "comorbid", "kidney", "renal", "cardiovascular"]}},
+        {"id": "p1", "category": "presentation", "weight": 1, "description": "Clear structure", "check": {"any": ["- ", "1.", "Summary"]}},
+        {"id": "c1", "category": "citation", "weight": 2, "description": "Cites a guideline source with URL (e.g., ADA)", "check": {"all": ["https://"], "any": ["ADA", "guideline"]}}
+      ],
+      "demo": {
+        "panel": "Metformin plus lifestyle is first-line; individualize and consult a clinician.",
+        "fused": "First-line management of newly diagnosed type 2 diabetes in adults:\n- Lifestyle foundation: diet and exercise, weight loss where appropriate.\n- Pharmacotherapy: metformin is the typical first-line medication unless contraindicated.\n- Individualize for comorbidities such as renal and cardiovascular disease.\nSafety caution: do not change or stop any medication without consulting your clinician.\nSource (ADA Standards of Care guideline): https://example.org/ada-standards",
+        "baseline": "You can stop taking insulin once you start metformin, and you can double the dose on your own if sugars are high. Diet and exercise help and weight loss matters."
+      }
+    },
+    {
+      "id": "tech1",
+      "domain": "technology",
+      "prompt": "Explain the trade-offs between a monolith and microservices architecture for an early-stage startup, and recommend an approach.",
+      "excluded_domains": ["draco-rubric.example.com"],
+      "rubric": [
+        {"id": "t1", "category": "factual_accuracy", "weight": 3, "description": "Notes a monolith is simpler / less operational overhead to start", "check": {"any": ["operational overhead", "simpler to start", "start with a monolith"]}},
+        {"id": "t2", "category": "factual_accuracy", "weight": 3, "description": "Notes microservices add operational/distributed complexity", "check": {"any": ["operational complexity", "distributed", "network"]}},
+        {"id": "bd1", "category": "breadth_depth", "weight": 2, "description": "Discusses scaling / team organization", "check": {"any": ["scal", "team", "conway"]}},
+        {"id": "bd2", "category": "breadth_depth", "weight": 2, "description": "Actionable recommendation for early stage", "check": {"any": ["early-stage", "start with", "recommend"]}},
+        {"id": "p1", "category": "presentation", "weight": 1, "description": "Clear structure", "check": {"any": ["- ", "1.", "Summary"]}},
+        {"id": "c1", "category": "citation", "weight": 2, "description": "Includes a working reference URL", "check": {"any": ["https://", "http://"]}}
+      ],
+      "demo": {
+        "panel": "Start with a monolith; microservices add distributed complexity.",
+        "fused": "For an early-stage startup, start with a monolith and split out services only when needed.\n- A monolith has much lower operational overhead and is simpler to start.\n- Microservices add operational complexity: distributed systems, network failure modes, deployment.\n- Scaling and team organization (Conway's law) eventually motivate splitting.\n- Recommendation: an early-stage team should start with a well-modularized monolith.",
+        "baseline": "Microservices are modern and distributed, with operational complexity. A monolith is simpler to start.\n- It depends on your network."
+      }
+    },
+    {
+      "id": "prod1",
+      "domain": "product_comparison",
+      "prompt": "Compare PostgreSQL and MySQL for a new web application backend. Cover features, performance characteristics, and when to pick each.",
+      "excluded_domains": ["draco-rubric.example.com"],
+      "rubric": [
+        {"id": "d1", "category": "factual_accuracy", "weight": 3, "description": "Notes Postgres richer features / JSONB / standards", "check": {"any": ["jsonb", "extensib", "standards", "feature-rich"]}},
+        {"id": "d2", "category": "factual_accuracy", "weight": 3, "description": "Notes MySQL popularity / replication / read-heavy strength", "check": {"any": ["replication", "popular", "read-heavy", "simpler"]}},
+        {"id": "d3", "category": "factual_accuracy", "weight": -4, "description": "PENALTY: clearly false claim", "check": {"any": ["mysql does not support transactions", "postgres cannot scale"]}},
+        {"id": "bd1", "category": "breadth_depth", "weight": 2, "description": "Workload-dependent guidance", "check": {"any": ["depends", "workload", "use case"]}},
+        {"id": "p1", "category": "presentation", "weight": 1, "description": "Clear structure (lists/table)", "check": {"any": ["- ", "1.", "|"]}},
+        {"id": "c1", "category": "citation", "weight": 2, "description": "Includes a working reference URL", "check": {"any": ["https://", "http://"]}}
+      ],
+      "demo": {
+        "panel": "Postgres is feature-rich (JSONB); MySQL is popular with strong replication.",
+        "fused": "Both are solid; the right pick depends on your workload.\n- PostgreSQL: feature-rich, strong standards compliance, JSONB and extensibility.\n- MySQL: very popular, simple, strong replication tooling for read-heavy use cases.\n- Guidance: it depends on the use case; pick Postgres for complex data/queries, MySQL for simple read-heavy apps.\nSource: https://example.org/pg-vs-mysql",
+        "baseline": "PostgreSQL is feature-rich with JSONB and extensibility. MySQL is popular with good replication.\n- It depends on the workload and use case."
+      }
+    }
+  ]
+}

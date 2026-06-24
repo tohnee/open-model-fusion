@@ -1,0 +1,279 @@
+{
+  "tasks": [
+    {
+      "id": "lh_vending",
+      "domain": "operations",
+      "kind": "longhorizon",
+      "prompt": "Operate a vending-machine business over 12 simulated weeks: set restock and pricing each week, track cash flow, and recover from a supplier delay in week 4. Keep the plan internally consistent across weeks.",
+      "horizon": "12 weekly steps",
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "m1",
+          "category": "breadth_depth",
+          "weight": 3,
+          "description": "A week-by-week plan covers all 12 weeks.",
+          "check": {
+            "any": [
+              "weekly plan",
+              "week-by-week",
+              "per week"
+            ]
+          },
+          "critical": true,
+          "order": 1
+        },
+        {
+          "id": "m2",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Cash-flow balance is tracked each week.",
+          "check": {
+            "any": [
+              "cash flow",
+              "cash-flow",
+              "balance"
+            ]
+          },
+          "critical": true,
+          "order": 2
+        },
+        {
+          "id": "m3",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Recovers from the week-4 supplier delay with a contingency.",
+          "check": {
+            "any": [
+              "recover",
+              "supplier delay",
+              "contingency"
+            ]
+          },
+          "critical": true,
+          "order": 3
+        },
+        {
+          "id": "m4",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Pricing reflects demand/elasticity.",
+          "check": {
+            "any": [
+              "price elasticity",
+              "demand"
+            ]
+          },
+          "order": 4
+        },
+        {
+          "id": "d1",
+          "category": "factual_accuracy",
+          "weight": -5,
+          "description": "Plans to restock from the delayed supplier in week 4 (contradicts the delay).",
+          "check": {
+            "any": [
+              "restock from the delayed supplier in week 4",
+              "ignores the week-4 delay"
+            ]
+          },
+          "critical": true
+        }
+      ],
+      "demo": {
+        "fused": "A week-by-week plan covers all 12 weeks. Cash-flow balance is tracked each week. Recovers from the week-4 supplier delay with a contingency. Pricing reflects demand/elasticity. Plans to restock from the delayed supplier in week 4 (contradicts the delay).",
+        "baseline": "A week-by-week plan covers all 12 weeks. Cash-flow balance is tracked each week. Recovers from the week-4 supplier delay with a contingency.",
+        "panel": "A week-by-week plan covers all 12 weeks. Cash-flow balance is tracked each week. Recovers from the week-4 supplier delay with a contingency. (panel member perspective)"
+      }
+    },
+    {
+      "id": "lh_policy",
+      "domain": "support_agent",
+      "kind": "longhorizon",
+      "prompt": "As a support agent bound by a refund policy (refunds only within 30 days with proof of purchase), handle a multi-step case: verify eligibility, apply the policy exactly, update the record, and reply to the customer.",
+      "horizon": "multi-step tool+policy episode",
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "m1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Verifies eligibility: within 30 days and proof of purchase.",
+          "check": {
+            "any": [
+              "verify",
+              "eligibility",
+              "within 30 days",
+              "proof of purchase"
+            ]
+          },
+          "critical": true,
+          "order": 1
+        },
+        {
+          "id": "m2",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Applies the policy exactly (approve/deny per rule).",
+          "check": {
+            "any": [
+              "apply the policy",
+              "approve",
+              "deny"
+            ]
+          },
+          "critical": true,
+          "order": 2
+        },
+        {
+          "id": "m3",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Updates the record/ticket.",
+          "check": {
+            "any": [
+              "update",
+              "record",
+              "ticket"
+            ]
+          },
+          "order": 3
+        },
+        {
+          "id": "m4",
+          "category": "presentation",
+          "weight": 2,
+          "description": "Communicates clearly to the customer.",
+          "check": {
+            "any": [
+              "reply",
+              "communicate",
+              "customer message"
+            ]
+          },
+          "order": 4
+        },
+        {
+          "id": "d1",
+          "category": "factual_accuracy",
+          "weight": -5,
+          "description": "Issues a refund outside the 30-day window without proof.",
+          "check": {
+            "any": [
+              "refund outside the 30-day window",
+              "waive the policy"
+            ]
+          },
+          "critical": true
+        }
+      ],
+      "demo": {
+        "fused": "Verifies eligibility: within 30 days and proof of purchase. Applies the policy exactly (approve/deny per rule). Updates the record/ticket. Communicates clearly to the customer.",
+        "baseline": "Verifies eligibility: within 30 days and proof of purchase. Applies the policy exactly (approve/deny per rule). Updates the record/ticket. Communicates clearly to the customer. Issues a refund outside the 30-day window without proof.",
+        "panel": "Verifies eligibility: within 30 days and proof of purchase. Applies the policy exactly (approve/deny per rule). Updates the record/ticket. Communicates clearly to the customer. Issues a refund outside the 30-day window without proof. (panel member perspective)"
+      }
+    },
+    {
+      "id": "lh_roadmap",
+      "domain": "software_migration",
+      "kind": "longhorizon",
+      "prompt": "Plan and execute a 5-subtask migration of a service from framework v2 to v3, preserving behavior and passing tests.",
+      "horizon": "5 ordered subtasks",
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "m1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Subtask 1: inventory breaking changes.",
+          "check": {
+            "any": [
+              "inventory",
+              "audit",
+              "breaking changes"
+            ]
+          },
+          "critical": true,
+          "order": 1
+        },
+        {
+          "id": "m2",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Subtask 2: order dependency upgrades.",
+          "check": {
+            "any": [
+              "dependency",
+              "upgrade order"
+            ]
+          },
+          "critical": true,
+          "order": 2
+        },
+        {
+          "id": "m3",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Subtask 3: add a compatibility shim.",
+          "check": {
+            "any": [
+              "adapter",
+              "shim",
+              "compatibility layer"
+            ]
+          },
+          "critical": true,
+          "order": 3
+        },
+        {
+          "id": "m4",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Subtask 4: migrate module by module.",
+          "check": {
+            "any": [
+              "migrate",
+              "incrementally",
+              "module by module"
+            ]
+          },
+          "critical": true,
+          "order": 4
+        },
+        {
+          "id": "m5",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Subtask 5: full regression suite green.",
+          "check": {
+            "any": [
+              "tests pass",
+              "regression suite",
+              "green"
+            ]
+          },
+          "critical": true,
+          "order": 5
+        },
+        {
+          "id": "d1",
+          "category": "factual_accuracy",
+          "weight": -5,
+          "description": "Does a big-bang rewrite that breaks tests.",
+          "check": {
+            "any": [
+              "skips the regression",
+              "big-bang rewrite breaks"
+            ]
+          },
+          "critical": true
+        }
+      ],
+      "demo": {
+        "fused": "Subtask 1: inventory breaking changes. Subtask 2: order dependency upgrades. Subtask 3: add a compatibility shim. Subtask 4: migrate module by module. Subtask 5: full regression suite green.",
+        "baseline": "Subtask 1: inventory breaking changes. Subtask 2: order dependency upgrades. Subtask 3: add a compatibility shim. Subtask 4: migrate module by module. Subtask 5: full regression suite green.",
+        "panel": "Subtask 1: inventory breaking changes. Subtask 2: order dependency upgrades. Subtask 3: add a compatibility shim. Subtask 4: migrate module by module. Subtask 5: full regression suite green. (panel member perspective)"
+      }
+    }
+  ]
+}

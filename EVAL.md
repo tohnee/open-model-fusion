@@ -1,0 +1,129 @@
+# Evaluation (DRACO-style)
+
+This is the skill's built-in evaluation standard. It reproduces the methodology
+OpenRouter used in *Surpassing Frontier Performance with Fusion* (2026-06-12) so you
+can answer, for **your** tasks and models: does Fusion actually beat a single model,
+by how much, at what cost, and is it worth it?
+
+## What it reproduces from the article
+
+- **Weighted rubric, four categories.** Each task carries criteria across
+  **Factual Accuracy** (~20), **Breadth & Depth** (~9), **Presentation Quality** (~6),
+  **Citation Quality** (~5) — ~39 weighted criteria total.
+- **Negative-weight criteria.** A criterion can carry a negative weight; "meeting" it
+  means the response *contains that error* (e.g. dangerous medical advice → big
+  penalty). This is what stops a verbose, confident-but-wrong answer from scoring well.
+- **Normalized 0–100 scoring.**
+  `score = clamp( Σ(weightᵢ · metᵢ) / Σ(positive weights), 0, 1 ) · 100`.
+  Only meeting real criteria adds points; only errors subtract — you can't bluff.
+- **Per-criterion judging, three independent passes, mean score.** A judge model
+  decides met/not-met per criterion; the harness runs it N=3 times and averages.
+- **Relative gap is the trustworthy signal.** Absolute scores shift 10–25 pts with
+  judge choice, but Fusion-vs-baseline rankings are stable — so the verdict keys off
+  the **lift over a solo baseline**, not the absolute number.
+- **Contamination guard.** Each task's `excluded_domains` are passed to the panel's
+  web tools, exactly as the article excluded the rubric-hosting domains. Always do
+  this when grading web-enabled models.
+- **Fair comparison.** Fusion and the solo baseline run with the **same tools**; the
+  only difference is whether multiple models' outputs are synthesized.
+
+## What you get back
+
+A structured report (`render_markdown` / `render_json`) with:
+
+- **Headline:** mean Fusion vs mean baseline, and the **lift**.
+- **Feedback:** per-category and per-domain breakdown; which **penalty/error criteria**
+  each side triggered.
+- **Economics:** cost multiplier (tokens, and $ if you supply a price map),
+  latency multiplier, and a **quality-per-dollar** ratio.
+- **Verdict:** a rating (`strong_win` / `win` / `marginal` / `neutral` / `regression`),
+  a `budget_win` flag (matches baseline within ~1 pt at ≤0.7× cost), a `worth_it`
+  boolean, and a plain-language **conclusion** with recommendations.
+
+## Run it
+
+Zero-key demo (canned answers, rule grader) — see the report + verdict format:
+
+```bash
+open-fusion-eval --demo
+```
+
+Real run — budget panel vs a solo baseline, LLM judge, 3 passes, grounded, with the
+rubric host excluded:
+
+```bash
+open-fusion-eval --tasks sample --preset budget \
+  --baseline anthropic/claude-opus-4.8 \
+  --grader llm --grader-model google/gemini-3.1-pro-preview \
+  --passes 3 --tools --exclude-domains "draco-rubric.example.com" \
+  --md report.md
+```
+
+Library:
+
+```python
+import asyncio
+from open_fusion.config import load_preset, ModelSpec
+from open_fusion.client import ModelClient
+from open_fusion.eval import load_tasks, evaluate, LLMJudgeGrader, render_markdown
+
+cfg = load_preset("budget")
+client = ModelClient(api_key="sk-or-...")
+grader = LLMJudgeGrader(client, ModelSpec("google/gemini-3.1-pro-preview"))
+report = asyncio.run(evaluate(load_tasks("sample"), cfg,
+                              ModelSpec("anthropic/claude-opus-4.8"), grader,
+                              client=client, n_passes=3))
+print(render_markdown(report))
+print(report["verdict"]["worth_it"], report["verdict"]["conclusion"])
+```
+
+## Plug in the real DRACO benchmark
+
+The shipped `sample_tasks.json` is a small DRACO-*style* set (clearly labeled), not the
+real 100-task DRACO benchmark, which is external (Perplexity AI, arXiv:2602.11685).
+To run real DRACO:
+
+1. Convert each DRACO task into the task JSON shape: `{id, domain, prompt, rubric:[{id,
+   category, weight, description}], excluded_domains:[...]}`. Categories must be one of
+   `factual_accuracy | breadth_depth | presentation | citation`. Use negative weights
+   for the paper's penalty criteria.
+2. Grade with `--grader llm` (the rule grader is only for mechanically checkable
+   criteria and the offline demo).
+3. Exclude the rubric-hosting domains from web tools (`--exclude-domains`).
+4. Compare Fusion against each solo baseline you care about; read the **lift**, not the
+   absolute score.
+
+## Caveats (the article's own)
+
+- DRACO is text-only, English-only, and a static set; it does **not** cover
+  long-horizon tasks (where models like Fable shine).
+- A meaningful share of Fusion's lift comes from the **synthesis step itself** — running
+  the same model twice and synthesizing already helps. Test a same-model panel to
+  separate "synthesis lift" from "diversity lift" for your workload.
+
+## Built-in task suites (`--suite`)
+
+Three offline-runnable suites ship in `src/open_fusion/eval/tasks/` (regenerated by
+`python -m open_fusion.eval.tasks._build_tasks`, which self-verifies that every demo
+answer trips exactly its intended detectors):
+
+| Suite | `--suite` | What it covers |
+|---|---|---|
+| DRACO deep research | `draco` | All **10** article domains: academic_research, finance, law, medicine, technology, ux_design, general_knowledge, needle_retrieval, personalized_assistance, product_comparison. |
+| Agent long-horizon | `longhorizon` | Reliability via **pass^k** (τ-bench, Yao et al. 2024): a task counts as a pass only if *every* one of the N runs meets all `critical` milestones and trips no `critical` penalty — so pass^k = pᵏ collapses with any inconsistency. Tasks are built so Fusion and the solo model each fail a *different* critical task, yielding comparable pass^k (the honest finding: DRACO/Fusion targets deep research, not long-horizon execution). |
+| Semiconductor / DRAM | `semiconductor` | 2026 memory-supercycle facts (SK hynix HBM lead, JEDEC HBM4 spec, HBM3E shipments, DDR5, CXMT/export-control risk). Two deep-research tasks + one long-horizon HBM4 capacity-ramp task with rubric-source domains excluded. |
+
+`--suite all` concatenates draco + longhorizon + semiconductor. Run any of them offline:
+
+```bash
+open-fusion-eval --demo --suite draco
+open-fusion-eval --demo --suite longhorizon     # reports pass^3 + milestone coverage
+open-fusion-eval --demo --suite semiconductor
+open-fusion-eval --demo --suite all --md report.md
+```
+
+Long-horizon runs add a `long_horizon` block to the report (`pass_hat_k`, milestone
+completion, drift errors per side) and a reliability overlay to the verdict.
+
+See **DESIGN.html** for the full design document (principle analysis, logical design,
+the evaluation methodology, and how eval gates skill application).

@@ -1,0 +1,843 @@
+{
+  "tasks": [
+    {
+      "id": "draco_academic",
+      "domain": "academic_research",
+      "kind": "draco",
+      "prompt": "Summarize the current evidence on whether spaced repetition improves long-term retention, and the main methodological caveats.",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "The spacing effect is well replicated for long-term retention.",
+          "check": {
+            "any": [
+              "spaced repetition",
+              "spacing effect"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Retrieval practice (the testing effect) compounds the benefit.",
+          "check": {
+            "any": [
+              "retrieval practice",
+              "testing effect"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Effect sizes vary by material and spacing schedule (moderators).",
+          "check": {
+            "any": [
+              "effect size",
+              "heterogeneity",
+              "moderators"
+            ]
+          }
+        },
+        {
+          "id": "p1",
+          "category": "presentation",
+          "weight": 1,
+          "description": "## Summary\nClear trade-offs and a concrete recommendation follow.",
+          "check": {
+            "any": [
+              "##",
+              "summary",
+              "trade-off",
+              "trade-offs"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        },
+        {
+          "id": "n1",
+          "category": "factual_accuracy",
+          "weight": -3,
+          "description": "It proves you never need to review again.",
+          "check": {
+            "any": [
+              "proves you never need to review",
+              "guarantees perfect recall"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "The spacing effect is well replicated for long-term retention. Retrieval practice (the testing effect) compounds the benefit. Effect sizes vary by material and spacing schedule (moderators). ## Summary\nClear trade-offs and a concrete recommendation follow. Primary sources: https://example.org/report [1].",
+        "baseline": "The spacing effect is well replicated for long-term retention. ## Summary\nClear trade-offs and a concrete recommendation follow. It proves you never need to review again.",
+        "panel": "The spacing effect is well replicated for long-term retention. ## Summary\nClear trade-offs and a concrete recommendation follow. It proves you never need to review again. (panel member perspective)"
+      }
+    },
+    {
+      "id": "draco_finance",
+      "domain": "finance",
+      "kind": "draco",
+      "prompt": "What are the strongest arguments for and against a broad carbon tax, and the key design choices that determine its effects?",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "A carbon tax prices the externality at its marginal damage.",
+          "check": {
+            "any": [
+              "price externalit",
+              "marginal damage"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Revenue recycling or a dividend offsets regressivity.",
+          "check": {
+            "any": [
+              "revenue recycling",
+              "rebate",
+              "dividend"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Without border adjustment, leakage and regressivity bite.",
+          "check": {
+            "any": [
+              "regressiv",
+              "border adjustment",
+              "leakage"
+            ]
+          }
+        },
+        {
+          "id": "b2",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Versus cap-and-trade it gives price certainty, not quantity certainty.",
+          "check": {
+            "any": [
+              "vs cap-and-trade",
+              "price certainty"
+            ]
+          }
+        },
+        {
+          "id": "p1",
+          "category": "presentation",
+          "weight": 1,
+          "description": "## Summary\nClear trade-offs and a concrete recommendation follow.",
+          "check": {
+            "any": [
+              "##",
+              "summary",
+              "trade-off",
+              "trade-offs"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "A carbon tax prices the externality at its marginal damage. Revenue recycling or a dividend offsets regressivity. Without border adjustment, leakage and regressivity bite. Versus cap-and-trade it gives price certainty, not quantity certainty. ## Summary\nClear trade-offs and a concrete recommendation follow. Primary sources: https://example.org/report [1].",
+        "baseline": "A carbon tax prices the externality at its marginal damage. Versus cap-and-trade it gives price certainty, not quantity certainty.",
+        "panel": "A carbon tax prices the externality at its marginal damage. Versus cap-and-trade it gives price certainty, not quantity certainty. (panel member perspective)"
+      }
+    },
+    {
+      "id": "draco_law",
+      "domain": "law",
+      "kind": "draco",
+      "prompt": "Explain the doctrine of fair use in US copyright and how courts weigh the four factors.",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Fair use weighs the four statutory factors of section 107.",
+          "check": {
+            "any": [
+              "four factors",
+              "17 U.S.C",
+              "section 107"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "The first factor turns on transformative purpose and character.",
+          "check": {
+            "any": [
+              "transformative",
+              "purpose and character"
+            ]
+          }
+        },
+        {
+          "id": "f3",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "The fourth factor is the effect on the market for the work.",
+          "check": {
+            "any": [
+              "market effect",
+              "fourth factor"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "It is fact-specific with no bright-line rule.",
+          "check": {
+            "any": [
+              "fact-specific",
+              "no bright-line"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        },
+        {
+          "id": "n1",
+          "category": "factual_accuracy",
+          "weight": -3,
+          "description": "Fair use is a blanket right to copy anything.",
+          "check": {
+            "any": [
+              "fair use is a blanket right",
+              "always legal to copy"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "Fair use weighs the four statutory factors of section 107. The first factor turns on transformative purpose and character. The fourth factor is the effect on the market for the work. It is fact-specific with no bright-line rule. Primary sources: https://example.org/report [1].",
+        "baseline": "Fair use weighs the four statutory factors of section 107. It is fact-specific with no bright-line rule. Fair use is a blanket right to copy anything.",
+        "panel": "Fair use weighs the four statutory factors of section 107. It is fact-specific with no bright-line rule. Fair use is a blanket right to copy anything. (panel member perspective)"
+      }
+    },
+    {
+      "id": "draco_medicine",
+      "domain": "medicine",
+      "kind": "draco",
+      "prompt": "What is the current first-line approach to managing type 2 diabetes in adults, and the monitoring that matters most?",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Metformin remains first-line pharmacotherapy.",
+          "check": {
+            "any": [
+              "metformin"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Lifestyle change (diet and exercise) is foundational.",
+          "check": {
+            "any": [
+              "lifestyle",
+              "diet",
+              "exercise"
+            ]
+          }
+        },
+        {
+          "id": "f3",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Monitor HbA1c to target.",
+          "check": {
+            "any": [
+              "HbA1c",
+              "A1c"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Add SGLT2/GLP-1 agents for cardiorenal benefit.",
+          "check": {
+            "any": [
+              "SGLT2",
+              "GLP-1",
+              "cardiorenal"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        },
+        {
+          "id": "n1",
+          "category": "factual_accuracy",
+          "weight": -4,
+          "description": "You can stop taking insulin on your own.",
+          "check": {
+            "any": [
+              "stop taking insulin",
+              "ignore your doctor"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "Metformin remains first-line pharmacotherapy. Lifestyle change (diet and exercise) is foundational. Monitor HbA1c to target. Add SGLT2/GLP-1 agents for cardiorenal benefit. Primary sources: https://example.org/report [1].",
+        "baseline": "Metformin remains first-line pharmacotherapy. Lifestyle change (diet and exercise) is foundational. You can stop taking insulin on your own.",
+        "panel": "Metformin remains first-line pharmacotherapy. Lifestyle change (diet and exercise) is foundational. You can stop taking insulin on your own. (panel member perspective)"
+      }
+    },
+    {
+      "id": "draco_technology",
+      "domain": "technology",
+      "kind": "draco",
+      "prompt": "Compare REST and gRPC for a new internal microservice API, and when to choose each.",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "gRPC uses protobuf over HTTP/2 with streaming.",
+          "check": {
+            "any": [
+              "protobuf",
+              "HTTP/2",
+              "streaming"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "REST is human-readable with broad tooling and browser support.",
+          "check": {
+            "any": [
+              "human-readable",
+              "broad tooling",
+              "browser"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Trade-offs: latency, schema evolution, contract enforcement.",
+          "check": {
+            "any": [
+              "latency",
+              "schema evolution",
+              "contract"
+            ]
+          }
+        },
+        {
+          "id": "b2",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "When to choose each: gRPC for internal high-throughput and REST for public APIs.",
+          "check": {
+            "any": [
+              "when to choose"
+            ]
+          }
+        },
+        {
+          "id": "p1",
+          "category": "presentation",
+          "weight": 1,
+          "description": "## Summary\nClear trade-offs and a concrete recommendation follow.",
+          "check": {
+            "any": [
+              "##",
+              "summary",
+              "trade-off",
+              "trade-offs"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "gRPC uses protobuf over HTTP/2 with streaming. REST is human-readable with broad tooling and browser support. Trade-offs: latency, schema evolution, contract enforcement. When to choose each: gRPC for internal high-throughput and REST for public APIs. ## Summary\nClear trade-offs and a concrete recommendation follow. Primary sources: https://example.org/report [1].",
+        "baseline": "gRPC uses protobuf over HTTP/2 with streaming. When to choose each: gRPC for internal high-throughput and REST for public APIs.",
+        "panel": "gRPC uses protobuf over HTTP/2 with streaming. When to choose each: gRPC for internal high-throughput and REST for public APIs. (panel member perspective)"
+      }
+    },
+    {
+      "id": "draco_ux",
+      "domain": "ux_design",
+      "kind": "draco",
+      "prompt": "What are evidence-based principles for designing an onboarding flow that reduces drop-off?",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Use progressive disclosure to reduce cognitive load.",
+          "check": {
+            "any": [
+              "progressive disclosure",
+              "reduce cognitive load"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Drive users to the activation / time-to-value moment fast.",
+          "check": {
+            "any": [
+              "activation",
+              "aha moment",
+              "time to value"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Measure the funnel and instrument drop-off points.",
+          "check": {
+            "any": [
+              "measure",
+              "funnel",
+              "drop-off"
+            ]
+          }
+        },
+        {
+          "id": "p1",
+          "category": "presentation",
+          "weight": 1,
+          "description": "## Summary\nClear trade-offs and a concrete recommendation follow.",
+          "check": {
+            "any": [
+              "##",
+              "summary",
+              "trade-off",
+              "trade-offs"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "Use progressive disclosure to reduce cognitive load. Drive users to the activation / time-to-value moment fast. Measure the funnel and instrument drop-off points. ## Summary\nClear trade-offs and a concrete recommendation follow. Primary sources: https://example.org/report [1].",
+        "baseline": "Use progressive disclosure to reduce cognitive load. Measure the funnel and instrument drop-off points.",
+        "panel": "Use progressive disclosure to reduce cognitive load. Measure the funnel and instrument drop-off points. (panel member perspective)"
+      }
+    },
+    {
+      "id": "draco_general",
+      "domain": "general_knowledge",
+      "kind": "draco",
+      "prompt": "Explain why the sky is blue and why sunsets are red, at a level a curious adult can follow.",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Rayleigh scattering favors short blue light.",
+          "check": {
+            "any": [
+              "Rayleigh scattering"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "At sunset light travels a longer path, scattering out blue.",
+          "check": {
+            "any": [
+              "longer path",
+              "more scattering",
+              "horizon"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Scattering scales inversely with the fourth power of wavelength.",
+          "check": {
+            "any": [
+              "wavelength",
+              "inverse",
+              "fourth power"
+            ]
+          }
+        },
+        {
+          "id": "p1",
+          "category": "presentation",
+          "weight": 1,
+          "description": "## Summary\nClear trade-offs and a concrete recommendation follow.",
+          "check": {
+            "any": [
+              "##",
+              "summary",
+              "trade-off",
+              "trade-offs"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "Rayleigh scattering favors short blue light. At sunset light travels a longer path, scattering out blue. Scattering scales inversely with the fourth power of wavelength. ## Summary\nClear trade-offs and a concrete recommendation follow. Primary sources: https://example.org/report [1].",
+        "baseline": "Rayleigh scattering favors short blue light. ## Summary\nClear trade-offs and a concrete recommendation follow.",
+        "panel": "Rayleigh scattering favors short blue light. ## Summary\nClear trade-offs and a concrete recommendation follow. (panel member perspective)"
+      }
+    },
+    {
+      "id": "draco_needle",
+      "domain": "needle_retrieval",
+      "kind": "draco",
+      "prompt": "From a long policy document, extract the exact data-retention period for customer logs and the section that states it.",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 4,
+          "description": "Customer logs are retained for 90 days.",
+          "check": {
+            "any": [
+              "90 days",
+              "ninety days"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Stated in section 7.2 (retention clause).",
+          "check": {
+            "any": [
+              "section 7.2",
+              "retention clause"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 1,
+          "description": "Quotes the clause verbatim.",
+          "check": {
+            "any": [
+              "verbatim",
+              "quote"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        },
+        {
+          "id": "n1",
+          "category": "factual_accuracy",
+          "weight": -4,
+          "description": "Logs are retained indefinitely.",
+          "check": {
+            "any": [
+              "30 days",
+              "indefinitely"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "Customer logs are retained for 90 days. Stated in section 7.2 (retention clause). Quotes the clause verbatim. Primary sources: https://example.org/report [1].",
+        "baseline": "Customer logs are retained for 90 days. Logs are retained indefinitely.",
+        "panel": "Customer logs are retained for 90 days. Logs are retained indefinitely. (panel member perspective)"
+      }
+    },
+    {
+      "id": "draco_personal",
+      "domain": "personalized_assistance",
+      "kind": "draco",
+      "prompt": "Given a vegetarian user with a nut allergy training for a 10K, suggest a weekly meal framework.",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Plan is vegetarian and strictly nut-free.",
+          "check": {
+            "any": [
+              "vegetarian",
+              "no nuts",
+              "nut-free"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Protein from legumes, tofu, dairy/eggs.",
+          "check": {
+            "any": [
+              "protein",
+              "legumes",
+              "tofu"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Carbohydrate timing matched to endurance training load.",
+          "check": {
+            "any": [
+              "carbohydrate",
+              "endurance",
+              "training load"
+            ]
+          }
+        },
+        {
+          "id": "p1",
+          "category": "presentation",
+          "weight": 1,
+          "description": "## Summary\nClear trade-offs and a concrete recommendation follow.",
+          "check": {
+            "any": [
+              "##",
+              "summary",
+              "trade-off",
+              "trade-offs"
+            ]
+          }
+        },
+        {
+          "id": "n1",
+          "category": "factual_accuracy",
+          "weight": -4,
+          "description": "Add a handful of almonds for crunch.",
+          "check": {
+            "any": [
+              "almond",
+              "peanut",
+              "cashew"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "Plan is vegetarian and strictly nut-free. Protein from legumes, tofu, dairy/eggs. Carbohydrate timing matched to endurance training load. ## Summary\nClear trade-offs and a concrete recommendation follow.",
+        "baseline": "Plan is vegetarian and strictly nut-free. ## Summary\nClear trade-offs and a concrete recommendation follow. Add a handful of almonds for crunch.",
+        "panel": "Plan is vegetarian and strictly nut-free. ## Summary\nClear trade-offs and a concrete recommendation follow. Add a handful of almonds for crunch. (panel member perspective)"
+      }
+    },
+    {
+      "id": "draco_product",
+      "domain": "product_comparison",
+      "kind": "draco",
+      "prompt": "Compare ridge, lasso, and elastic-net regression and when to prefer each.",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Ridge applies L2 shrinkage, keeping all features.",
+          "check": {
+            "any": [
+              "L2",
+              "ridge shrinks"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Lasso (L1) yields sparsity / feature selection.",
+          "check": {
+            "any": [
+              "L1",
+              "lasso",
+              "sparse",
+              "feature selection"
+            ]
+          }
+        },
+        {
+          "id": "f3",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Elastic-net combines L1+L2, good for correlated features.",
+          "check": {
+            "any": [
+              "elastic-net",
+              "combines",
+              "correlated"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Prefer lasso/elastic-net in high-dimensional sparse settings.",
+          "check": {
+            "any": [
+              "when to prefer",
+              "high-dimensional"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "Ridge applies L2 shrinkage, keeping all features. Lasso (L1) yields sparsity / feature selection. Elastic-net combines L1+L2, good for correlated features. Prefer lasso/elastic-net in high-dimensional sparse settings. Primary sources: https://example.org/report [1].",
+        "baseline": "Ridge applies L2 shrinkage, keeping all features. Lasso (L1) yields sparsity / feature selection.",
+        "panel": "Ridge applies L2 shrinkage, keeping all features. Lasso (L1) yields sparsity / feature selection. (panel member perspective)"
+      }
+    }
+  ]
+}

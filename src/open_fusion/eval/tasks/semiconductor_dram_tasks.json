@@ -1,0 +1,325 @@
+{
+  "tasks": [
+    {
+      "id": "dram_landscape",
+      "domain": "semiconductor",
+      "kind": "draco",
+      "prompt": "Assess the 2026 DRAM/HBM competitive landscape and the HBM3E->HBM4 transition: who leads, the key technology shifts, and the main supply and geopolitical risks.",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "SK hynix leads HBM with roughly half or more of the market.",
+          "check": {
+            "any": [
+              "SK hynix",
+              "SK Hynix"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "HBM4 enters mass production in 2026 (11+ Gbps, >2 TB/s, 12/16-hi hybrid bonding).",
+          "check": {
+            "any": [
+              "HBM4",
+              "mass production"
+            ]
+          }
+        },
+        {
+          "id": "f3",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "HBM3E remains the flagship, ~two-thirds of 2026 HBM shipments.",
+          "check": {
+            "any": [
+              "HBM3E"
+            ]
+          }
+        },
+        {
+          "id": "f4",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "DDR5 at 6400 MT/s is mainstream; DDR4 production was extended on price inversion.",
+          "check": {
+            "any": [
+              "DDR5",
+              "6400"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Supply/geopolitical risk: China (CXMT) ramp and US export controls.",
+          "check": {
+            "any": [
+              "CXMT",
+              "export control",
+              "geopolitical"
+            ]
+          }
+        },
+        {
+          "id": "b2",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Custom HBM with a logic base die on an advanced foundry node (TSMC).",
+          "check": {
+            "any": [
+              "custom HBM",
+              "base die",
+              "TSMC"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        },
+        {
+          "id": "n1",
+          "category": "factual_accuracy",
+          "weight": -4,
+          "description": "Intel leads the HBM market and HBM4 is slower than the prior generation.",
+          "check": {
+            "any": [
+              "Intel leads the HBM market",
+              "HBM4 is slower than HBM3E"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "SK hynix leads HBM with roughly half or more of the market. HBM4 enters mass production in 2026 (11+ Gbps, >2 TB/s, 12/16-hi hybrid bonding). HBM3E remains the flagship, ~two-thirds of 2026 HBM shipments. DDR5 at 6400 MT/s is mainstream; DDR4 production was extended on price inversion. Supply/geopolitical risk: China (CXMT) ramp and US export controls. Custom HBM with a logic base die on an advanced foundry node (TSMC). Primary sources: https://example.org/report [1].",
+        "baseline": "SK hynix leads HBM with roughly half or more of the market. HBM4 enters mass production in 2026 (11+ Gbps, >2 TB/s, 12/16-hi hybrid bonding). Intel leads the HBM market and HBM4 is slower than the prior generation.",
+        "panel": "SK hynix leads HBM with roughly half or more of the market. HBM4 enters mass production in 2026 (11+ Gbps, >2 TB/s, 12/16-hi hybrid bonding). Intel leads the HBM market and HBM4 is slower than the prior generation. (panel member perspective)"
+      }
+    },
+    {
+      "id": "dram_roadmaps",
+      "domain": "semiconductor",
+      "kind": "draco",
+      "prompt": "Compare the three majors' DRAM process-node and HBM roadmaps and what differentiates their HBM4 approaches.",
+      "horizon": null,
+      "excluded_domains": [],
+      "rubric": [
+        {
+          "id": "f1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Micron pushes 1-gamma; Samsung uses 1c DRAM for HBM4.",
+          "check": {
+            "any": [
+              "1-gamma",
+              "1γ",
+              "1c",
+              "1c DRAM"
+            ]
+          }
+        },
+        {
+          "id": "f2",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "All three rely on EUV at the leading edge.",
+          "check": {
+            "any": [
+              "EUV"
+            ]
+          }
+        },
+        {
+          "id": "f3",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "HBM4 uses hybrid bonding for 12/16-hi stacks.",
+          "check": {
+            "any": [
+              "hybrid bonding",
+              "TSV",
+              "16-hi",
+              "12-hi"
+            ]
+          }
+        },
+        {
+          "id": "f4",
+          "category": "factual_accuracy",
+          "weight": 2,
+          "description": "Yield ramp is the key differentiator on HBM4.",
+          "check": {
+            "any": [
+              "yield"
+            ]
+          }
+        },
+        {
+          "id": "b1",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "SK hynix pairs the HBM4 logic base die with a TSMC foundry node.",
+          "check": {
+            "any": [
+              "base die",
+              "foundry",
+              "TSMC",
+              "logic die"
+            ]
+          }
+        },
+        {
+          "id": "c1",
+          "category": "citation",
+          "weight": 1,
+          "description": "Primary sources: https://example.org/report [1].",
+          "check": {
+            "any": [
+              "https?://",
+              "\\[[0-9]+\\]"
+            ]
+          }
+        },
+        {
+          "id": "n1",
+          "category": "factual_accuracy",
+          "weight": -4,
+          "description": "DDR4 is fully discontinued by all vendors.",
+          "check": {
+            "any": [
+              "DDR4 is fully discontinued",
+              "no one makes DDR4"
+            ]
+          }
+        }
+      ],
+      "demo": {
+        "fused": "Micron pushes 1-gamma; Samsung uses 1c DRAM for HBM4. All three rely on EUV at the leading edge. HBM4 uses hybrid bonding for 12/16-hi stacks. Yield ramp is the key differentiator on HBM4. SK hynix pairs the HBM4 logic base die with a TSMC foundry node. Primary sources: https://example.org/report [1].",
+        "baseline": "Micron pushes 1-gamma; Samsung uses 1c DRAM for HBM4. HBM4 uses hybrid bonding for 12/16-hi stacks. DDR4 is fully discontinued by all vendors.",
+        "panel": "Micron pushes 1-gamma; Samsung uses 1c DRAM for HBM4. HBM4 uses hybrid bonding for 12/16-hi stacks. DDR4 is fully discontinued by all vendors. (panel member perspective)"
+      }
+    },
+    {
+      "id": "dram_ramp",
+      "domain": "semiconductor",
+      "kind": "longhorizon",
+      "prompt": "Plan SK hynix's HBM4 capacity ramp quarter-by-quarter from 2026 H1 to 2027 H1: wafer allocation between HBM and general DRAM, packaging/hybrid-bonding capacity, customer commitments (NVIDIA Rubin), capex phasing, and a contingency for a 2027 oversupply risk. Keep the plan internally consistent across quarters.",
+      "horizon": "5 quarters (2026H1->2027H1)",
+      "excluded_domains": [
+        "counterpointresearch.com",
+        "trendforce.com"
+      ],
+      "rubric": [
+        {
+          "id": "m1",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Allocates wafers between HBM (uses ~3x wafers) and general DRAM.",
+          "check": {
+            "any": [
+              "wafer allocation",
+              "3x wafers",
+              "three times",
+              "general DRAM"
+            ]
+          },
+          "critical": true,
+          "order": 1
+        },
+        {
+          "id": "m2",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Ramps advanced packaging / hybrid-bonding capacity.",
+          "check": {
+            "any": [
+              "hybrid bonding",
+              "packaging",
+              "TSV",
+              "advanced packaging"
+            ]
+          },
+          "critical": true,
+          "order": 2
+        },
+        {
+          "id": "m3",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Secures customer commitments (NVIDIA Rubin).",
+          "check": {
+            "any": [
+              "Rubin",
+              "NVIDIA",
+              "customer commitment"
+            ]
+          },
+          "order": 3
+        },
+        {
+          "id": "m4",
+          "category": "breadth_depth",
+          "weight": 2,
+          "description": "Phases capex across the M15X / new fabs.",
+          "check": {
+            "any": [
+              "capex",
+              "phasing",
+              "fab"
+            ]
+          },
+          "order": 4
+        },
+        {
+          "id": "m5",
+          "category": "factual_accuracy",
+          "weight": 3,
+          "description": "Includes a 2027 oversupply contingency.",
+          "check": {
+            "any": [
+              "oversupply",
+              "2027",
+              "contingency"
+            ]
+          },
+          "critical": true,
+          "order": 5
+        },
+        {
+          "id": "d1",
+          "category": "factual_accuracy",
+          "weight": -5,
+          "description": "Later reallocates all wafers to general DRAM (contradicts the HBM plan).",
+          "check": {
+            "any": [
+              "reallocates all wafers to general DRAM",
+              "contradicts the HBM wafer plan"
+            ]
+          },
+          "critical": true
+        }
+      ],
+      "demo": {
+        "fused": "Allocates wafers between HBM (uses ~3x wafers) and general DRAM. Ramps advanced packaging / hybrid-bonding capacity. Secures customer commitments (NVIDIA Rubin). Phases capex across the M15X / new fabs. Includes a 2027 oversupply contingency.",
+        "baseline": "Allocates wafers between HBM (uses ~3x wafers) and general DRAM. Ramps advanced packaging / hybrid-bonding capacity. Secures customer commitments (NVIDIA Rubin). Includes a 2027 oversupply contingency.",
+        "panel": "Allocates wafers between HBM (uses ~3x wafers) and general DRAM. Ramps advanced packaging / hybrid-bonding capacity. Secures customer commitments (NVIDIA Rubin). Includes a 2027 oversupply contingency. (panel member perspective)"
+      }
+    }
+  ]
+}

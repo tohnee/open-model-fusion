@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "open-fusion"
+version = "1.0.0"
+description = "Open, vendor-neutral Fusion pattern: panel fan-out -> structured judge -> grounded synthesis."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "open-fusion" }]
+keywords = ["llm", "mixture-of-agents", "moa", "fusion", "ensemble", "consensus"]
+dependencies = []   # stdlib only
+
+[project.optional-dependencies]
+# Nothing required. Search keys are read from the environment at runtime.
+dev = []
+
+[project.scripts]
+open-fusion = "open_fusion.cli:main"
+open-fusion-eval = "open_fusion.eval.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"open_fusion.eval" = ["tasks/*.json"]
