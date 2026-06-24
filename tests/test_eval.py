@@ -164,6 +164,19 @@ def test_end_to_end_demo():
     check("conclusion text present", bool(report["verdict"]["conclusion"]))
 
 
+def test_fusion_capability_suite():
+    print("tasks: fusion capability suite loads + demo evaluates")
+    tasks = load_tasks("fusion")
+    check("fusion capability tasks present", len(tasks) >= 2)
+    check("fusion suite kind tagged", {t.kind for t in tasks} == {"fusion_capability"})
+    cats = {c.category for t in tasks for c in t.rubric}
+    check("fusion suite covers all 4 rubric categories", len(cats) == 4)
+    check("fusion suite has contamination exclusions", all(t.excluded_domains for t in tasks))
+    report = run_demo(tasks)
+    check("fusion suite demo shows lift", report["aggregate"]["lift"] > 0)
+    check("fusion suite verdict worth_it", report["verdict"]["worth_it"] is True)
+
+
 def main():
     test_scoring_math()
     test_categories_and_faithfulness()
@@ -172,6 +185,7 @@ def main():
     test_grader_passes_concurrent()
     test_verdict_logic()
     test_load_tasks()
+    test_fusion_capability_suite()
     test_end_to_end_demo()
     print(f"\n{PASS} passed, {FAIL} failed")
     return 1 if FAIL else 0

@@ -45,6 +45,7 @@ A structured report (`render_markdown` / `render_json`) with:
 Zero-key demo (canned answers, rule grader) — see the report + verdict format:
 
 ```bash
+open-fusion-eval --suite fusion --demo   # explicit Fusion capability smoke test
 open-fusion-eval --demo
 ```
 
@@ -116,6 +117,7 @@ answer trips exactly its intended detectors):
 `--suite all` concatenates draco + longhorizon + semiconductor. Run any of them offline:
 
 ```bash
+open-fusion-eval --suite fusion --demo   # explicit Fusion capability smoke test
 open-fusion-eval --demo --suite draco
 open-fusion-eval --demo --suite longhorizon     # reports pass^3 + milestone coverage
 open-fusion-eval --demo --suite semiconductor

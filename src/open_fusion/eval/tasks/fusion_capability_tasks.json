@@ -1,0 +1,46 @@
+{
+  "_about": "Fusion capability smoke tasks modeled after OpenRouter Fusion's public definition: parallel model perspectives, structured judge analysis (consensus / contradictions / partial coverage / unique insights / blind spots), and a grounded final answer. These are small DRACO-style tasks for an explicit `open-fusion-eval --suite fusion --demo` entry point; they are not a substitute for the full hosted OpenRouter Fusion chatroom or DRACO benchmark.",
+  "tasks": [
+    {
+      "id": "fusion_cap_reconcile_1",
+      "kind": "fusion_capability",
+      "domain": "fusion_reconciliation",
+      "prompt": "Two reviewers disagree about whether a startup should adopt microservices now. Produce a decision memo that reconciles the disagreement, names the decisive trade-offs, calls out any missing evidence, and ends with a recommendation.",
+      "excluded_domains": ["openrouter-fusion-rubric.example.com", "draco-rubric.example.com"],
+      "rubric": [
+        {"id": "consensus", "category": "factual_accuracy", "weight": 3, "description": "Identifies shared ground instead of treating views as wholly incompatible", "check": {"any": ["both", "agree", "shared", "common ground"]}},
+        {"id": "contradiction", "category": "breadth_depth", "weight": 3, "description": "Explicitly adjudicates the contradiction between speed/simplicity and scalability/independence", "check": {"all": ["microservices"], "any": ["contradiction", "trade-off", "where they differ", "adjudicate"]}},
+        {"id": "blind_spot", "category": "breadth_depth", "weight": 2, "description": "Calls out missing evidence or blind spots", "check": {"any": ["missing evidence", "blind spot", "unknown", "need to know"]}},
+        {"id": "recommendation", "category": "presentation", "weight": 2, "description": "Ends with a clear recommendation", "check": {"any": ["recommend", "decision", "therefore", "start with"]}},
+        {"id": "cite", "category": "citation", "weight": 1, "description": "Includes at least one reference URL when evidence is cited", "check": {"any": ["https://", "http://"]}},
+        {"id": "penalty_false_certainty", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: claims microservices are always superior or always required", "check": {"any": ["always superior", "always required", "must use microservices"]}}
+      ],
+      "demo": {
+        "panel": "Reviewer A favors a modular monolith for speed and lower operational overhead. Reviewer B favors microservices for team autonomy and independent scaling.",
+        "fused": "Decision memo\n- Common ground: both reviewers care about shipping quickly without blocking future scale.\n- Where they differ / trade-off: microservices can help independent scaling and team autonomy, but they add distributed-systems and operational overhead before the startup has enough traffic or team boundaries to justify it.\n- Blind spot / missing evidence: current traffic, team size, deployment maturity, and expected service boundaries are unknown.\n- Recommendation: start with a well-modularized monolith, instrument boundaries, and split services only when scaling or ownership evidence appears.\nReference: https://martinfowler.com/bliki/MonolithFirst.html",
+        "baseline": "Microservices are modern and always superior. The startup should use microservices immediately because scale matters."
+      }
+    },
+    {
+      "id": "fusion_cap_unique_1",
+      "kind": "fusion_capability",
+      "domain": "fusion_unique_insights",
+      "prompt": "Given competing analyses of whether to use RAG or fine-tuning for a customer-support assistant, synthesize the best answer. Preserve unique insights, identify partial coverage, note blind spots, and recommend a path.",
+      "excluded_domains": ["openrouter-fusion-rubric.example.com", "draco-rubric.example.com"],
+      "rubric": [
+        {"id": "rag_facts", "category": "factual_accuracy", "weight": 3, "description": "Correctly explains RAG is useful for changing/external knowledge", "check": {"all": ["RAG"], "any": ["fresh", "changing", "external", "retrieval"]}},
+        {"id": "finetune_facts", "category": "factual_accuracy", "weight": 3, "description": "Correctly explains fine-tuning is useful for style, format, or stable behavior", "check": {"any": ["style", "format", "stable behavior", "tone"]}},
+        {"id": "unique_insight", "category": "breadth_depth", "weight": 2, "description": "Preserves a unique insight from one perspective", "check": {"any": ["unique insight", "one analysis adds", "additional point", "preserve"]}},
+        {"id": "partial_coverage", "category": "breadth_depth", "weight": 2, "description": "Notes partial coverage or aspects only some analyses considered", "check": {"any": ["partial coverage", "only some", "not all", "one analysis"]}},
+        {"id": "blind_spot", "category": "presentation", "weight": 1, "description": "Mentions blind spots or missing evaluation data", "check": {"any": ["blind spot", "missing", "evaluate", "holdout"]}},
+        {"id": "cite", "category": "citation", "weight": 1, "description": "Includes a URL reference", "check": {"any": ["https://", "http://"]}},
+        {"id": "penalty_binary", "category": "breadth_depth", "weight": -4, "description": "PENALTY: presents RAG vs fine-tuning as an unconditional binary", "check": {"any": ["always choose RAG", "always choose fine-tuning", "never use RAG", "never fine-tune"]}}
+      ],
+      "demo": {
+        "panel": "RAG handles fresh knowledge; fine-tuning controls style and stable behavior. Evaluate on held-out support tickets.",
+        "fused": "Recommendation: use RAG first for support knowledge, then fine-tune only if style or stable behavior remains poor.\n- RAG is best for changing or external knowledge because retrieval can update without retraining.\n- Fine-tuning is useful for style, answer format, tone, and stable behavior.\n- Unique insight to preserve: evaluate on a holdout set of real support tickets before paying for tuning.\n- Partial coverage: one analysis may focus on retrieval quality while another focuses on response consistency; both matter.\n- Blind spot: missing data on knowledge-base freshness, ticket distribution, and acceptable hallucination rate.\nReference: https://platform.openai.com/docs/guides/retrieval",
+        "baseline": "Always choose RAG and never fine-tune. RAG is retrieval."
+      }
+    }
+  ]
+}
