@@ -46,6 +46,9 @@ def _build_parser() -> argparse.ArgumentParser:
     p.add_argument("--tools", action="store_true", help="Enable grounded panels (web/exec).")
     p.add_argument("--exclude-domains", dest="exclude_domains", default=None)
     p.add_argument("--demo", action="store_true", help="Run offline with canned answers (no key).")
+    p.add_argument("--ablation", action="store_true",
+                   help="Run the factorial mechanism ablation (decomposes lift into "
+                        "synthesis / diversity / structured-judge with paired bootstrap CIs).")
     p.add_argument("--md", default=None, help="Write the markdown report to this path.")
     p.add_argument("--json", action="store_true", help="Print the full report as JSON.")
     return p
@@ -54,6 +57,37 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
     tasks = load_tasks(args.suite or args.tasks)
+
+    # --- ablation: decompose the lift into its mechanisms (own report shape) -----
+    if args.ablation:
+        from .ablation import render_ablation_markdown, run_ablation, run_ablation_demo
+        if args.demo:
+            report = run_ablation_demo(tasks)
+        else:
+            import os
+            base = load_preset(args.preset or "quality") if not args.panel else FusionConfig(
+                panel=[ModelSpec(s.strip()) for s in args.panel.split(",") if s.strip()],
+                judge=ModelSpec(args.judge or "openai/gpt-5.5"))
+            base.tools_enabled = bool(args.tools)
+            base.base_url = os.getenv("OPEN_FUSION_BASE_URL")
+            base.api_key = os.getenv("OPEN_FUSION_API_KEY") or os.getenv("OPENROUTER_API_KEY")
+            # ablation needs DISTINCT models; the panel doubles as the model pool.
+            models = base.panel if len(base.panel) >= 2 else [base.panel[0], base.judge]
+            client = ModelClient(fusion_depth=base.depth + 1, base_url=base.base_url,
+                                 api_key=base.api_key)
+            grader = (LLMJudgeGrader(client, ModelSpec(args.grader_model))
+                      if args.grader == "llm" else RuleGrader())
+            report = asyncio.run(run_ablation(tasks, models, base.judge, grader,
+                                              client=client, base=base, n_passes=args.passes))
+        md = render_ablation_markdown(report)
+        if args.md:
+            with open(args.md, "w", encoding="utf-8") as f:
+                f.write(md + "\n")
+        if args.json:
+            sys.stdout.write(render_json(report) + "\n")
+        else:
+            sys.stdout.write(md + "\n")
+        return 0
 
     if args.demo:
         from . import run_demo

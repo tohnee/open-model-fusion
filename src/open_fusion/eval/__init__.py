@@ -18,6 +18,8 @@ import json
 from pathlib import Path
 
 from ..config import FusionConfig, ModelSpec
+from .ablation import (Arm, build_canonical_arms, paired_bootstrap,
+                       render_ablation_markdown, run_ablation, run_ablation_demo)
 from .grader import Grader, LLMJudgeGrader, RuleGrader
 from .harness import evaluate
 from .report import render_json, render_markdown
@@ -29,6 +31,9 @@ __all__ = [
     "RuleGrader", "LLMJudgeGrader", "Grader",
     "Task", "Criterion", "RubricCategory", "GradeResult", "score_response",
     "DRACO_CATEGORY_TARGETS", "render_markdown", "render_json",
+    # ablation harness (mechanism attribution + paired bootstrap)
+    "run_ablation", "run_ablation_demo", "render_ablation_markdown",
+    "build_canonical_arms", "paired_bootstrap", "Arm",
 ]
 
 _TASK_DIR = Path(__file__).parent / "tasks"

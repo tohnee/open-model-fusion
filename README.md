@@ -30,8 +30,22 @@ print(r.telemetry)       # completions / tokens / latency / status
 
 Verify offline (no key needed):
 ```bash
-python tests/test_open_fusion.py     # 31 passed (core)
-python tests/test_eval.py            # 34 passed (DRACO-style eval)
+python tests/test_open_fusion.py     # core pipeline
+python tests/test_eval.py            # DRACO-style eval
+python tests/test_eval_suites.py     # suites + long-horizon
+python tests/test_ablation.py        # mechanism-attribution ablation
+```
+
+## Does the lift hold up? Mechanism ablation
+
+A point lift over a solo baseline can't say *where* the lift comes from, and the demo
+numbers are canned. `REVIEW.md` is a full code review + feasibility assessment;
+`ABLATION.md` + `open-fusion-eval --ablation` decompose the lift into its parts
+(synthesis pass vs. panel diversity vs. structured judge) with paired-bootstrap 95% CIs:
+
+```bash
+open-fusion-eval --ablation --demo --suite fusion   # offline wiring check
+open-fusion-eval --ablation --suite draco --panel "...,...,..." --grader llm
 ```
 
 ## Is it any good? Built-in evaluation
