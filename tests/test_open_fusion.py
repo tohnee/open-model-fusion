@@ -49,7 +49,11 @@ def check(name: str, cond: bool):
 
 
 def cfg(panel=("a/x", "b/y"), judge="a/x", **kw) -> FusionConfig:
-    return FusionConfig(panel=[ModelSpec(s) for s in panel], judge=ModelSpec(judge), **kw)
+    # 默认关闭 short-circuit 优化，确保测试基础 pipeline 行为。
+    # 需要测试 short-circuit 的场景在各自测试函数中显式开启。
+    defaults = dict(enable_consensus_shortcut=False, enable_pick_best=False)
+    defaults.update(kw)
+    return FusionConfig(panel=[ModelSpec(s) for s in panel], judge=ModelSpec(judge), **defaults)
 
 
 # --------------------------------------------------------------------------- #

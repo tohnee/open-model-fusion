@@ -20,6 +20,8 @@ from pathlib import Path
 from ..config import FusionConfig, ModelSpec
 from .ablation import (Arm, build_canonical_arms, paired_bootstrap,
                        render_ablation_markdown, run_ablation, run_ablation_demo)
+from .superiority import (run_superiority_benchmark, run_superiority_demo,
+                          render_superiority_markdown, build_superiority_arms)
 from .grader import Grader, LLMJudgeGrader, RuleGrader
 from .harness import evaluate
 from .report import render_json, render_markdown
@@ -34,6 +36,9 @@ __all__ = [
     # ablation harness (mechanism attribution + paired bootstrap)
     "run_ablation", "run_ablation_demo", "render_ablation_markdown",
     "build_canonical_arms", "paired_bootstrap", "Arm",
+    # superiority benchmark (prove fusion beats best single model + oracle)
+    "run_superiority_benchmark", "run_superiority_demo",
+    "render_superiority_markdown", "build_superiority_arms",
 ]
 
 _TASK_DIR = Path(__file__).parent / "tasks"
@@ -43,6 +48,9 @@ _SUITES = {
     "longhorizon": "longhorizon_tasks.json",
     "semiconductor": "semiconductor_dram_tasks.json",
     "fusion": "fusion_capability_tasks.json",
+    "superiority": "superiority_tasks.json",
+    "superiority_v2": "superiority_tasks_v2.json",
+    "logic_hard": "logic_hard_tasks.json",
 }
 
 

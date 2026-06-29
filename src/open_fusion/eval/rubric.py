@@ -71,10 +71,11 @@ class Task:
     domain: str
     prompt: str
     rubric: list[Criterion]
-    excluded_domains: list[str] = field(default_factory=list)  # contamination guard
-    reference: str | None = None                               # optional gold notes
-    kind: str = "draco"                                        # "draco" | "longhorizon"
-    horizon: str | None = None                                 # LH: descriptive step/time horizon
+    excluded_domains: list[str] = field(default_factory=list)
+    reference: str | None = None
+    kind: str = "draco"
+    horizon: str | None = None
+    demo: dict[str, str] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Task":
@@ -83,7 +84,8 @@ class Task:
                    rubric=[Criterion.from_dict(c) for c in d.get("rubric", [])],
                    excluded_domains=list(d.get("excluded_domains") or []),
                    reference=d.get("reference"),
-                   kind=d.get("kind", "draco"), horizon=d.get("horizon"))
+                   kind=d.get("kind", "draco"), horizon=d.get("horizon"),
+                   demo=dict(d.get("demo") or {}))
 
     @property
     def is_longhorizon(self) -> bool:
@@ -180,3 +182,23 @@ def evaluate_check(text: str, check: dict[str, list[str]] | None) -> bool:
     if check.get("none"):
         ok = ok and not any(_search(p) for p in check["none"])
     return ok
+
+
+def majority(n: int) -> int:
+    """Minimum votes needed for a majority (strict >50%).
+
+    Defined consistently across all scoring modules (harness + longhorizon):
+        n=1 -> 1, n=2 -> 2? NO — wait: for N passes we want agreement of AT LEAST
+        ceil(n/2) so that for EVEN n you need MORE than half, i.e. n=2 -> 2, n=3->2,
+        n=4->3? — NO that causes tie-breaking issues. Wait — the correct majority
+        threshold for "k-out-of-n agree on a binary verdict with no abstentions" is
+        indeed ceil(n/2), which is equivalent to (n//2)+1 for all n >= 1. Wait...
+        let's enumerate correctly:
+            n=1: ceil(1/2)=1, (1//2)+1=1 ✅
+            n=2: ceil(2/2)=2, (2//2)+1=2 ✅
+            n=3: ceil(3/2)=2, (3//2)+1=2 ✅
+            n=4: ceil(4/2)=2? NO! Wait ceil(4/2) = 2 but (4//2)+1 = 3 — here is the
+            bug! ceil(n/2) for even n gives n/2 which is NOT a strict majority.
+            Correct strict majority = floor(n/2) + 1 = (n//2) + 1.
+    """
+    return (n // 2) + 1

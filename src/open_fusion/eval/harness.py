@@ -25,7 +25,7 @@ from ..config import FusionConfig, ModelSpec, Phase
 from ..orchestrator import fuse
 from ..schema import TokenUsage
 from .grader import Grader
-from .rubric import RubricCategory, Task, score_response
+from .rubric import Criterion, RubricCategory, Task, majority, score_response
 
 
 # slug -> (input_$/Mtok, output_$/Mtok). Illustrative; override with your own.
@@ -59,17 +59,48 @@ async def _grade_avg(grader: Grader, task: Task, response: str, n: int) -> AvgSc
         for pid in gr.penalties_triggered:
             penalty_hits[pid] = penalty_hits.get(pid, 0) + 1
     by_cat = {cat: s / n for cat, s in cat_sums.items()}
-    majority = math.ceil(n / 2)
-    penalties = [pid for pid, h in penalty_hits.items() if h >= majority]
+    maj = majority(n)
+    penalties = [pid for pid, h in penalty_hits.items() if h >= maj]
     return AvgScore(normalized=sum(norms) / n, by_category=by_cat,
                     penalties=penalties, passes=norms, met_passes=met_passes)
 
 
-def _cost(usage_tokens: tuple[int, int], slug: str, prices: dict) -> dict[str, float]:
+def _slug_from_label(label: str) -> str:
+    """Extract model slug from telemetry label ('panel:openai/gpt-4o' -> 'openai/gpt-4o')."""
+    if ":" in label:
+        return label.split(":", 1)[1]
+    return label
+
+
+def _cost_from_usage(pin: int, pout: int, slug: str, prices: dict) -> float | None:
+    price = prices.get(slug)
+    if not price:
+        return None
+    return (pin / 1e6 * price[0] + pout / 1e6 * price[1])
+
+
+def _cost(usage_tokens: tuple[int, int], slug: str, prices: dict,
+          by_label: dict[str, dict[str, int]] | None = None) -> dict[str, Any]:
+    """Calculate cost in USD. If by_label is provided, sum per-model costs for accuracy;
+    otherwise fall back to single-slug pricing (for baselines)."""
     pin, pout = usage_tokens
     tok = pin + pout
-    price = prices.get(slug)
-    usd = (pin / 1e6 * price[0] + pout / 1e6 * price[1]) if price else None
+
+    usd = None
+    if by_label:
+        total_usd = 0.0
+        any_priced = False
+        for label, slot in by_label.items():
+            model_slug = _slug_from_label(label)
+            model_usd = _cost_from_usage(slot["prompt_tokens"], slot["completion_tokens"],
+                                         model_slug, prices)
+            if model_usd is not None:
+                total_usd += model_usd
+                any_priced = True
+        usd = total_usd if any_priced else None
+    else:
+        usd = _cost_from_usage(pin, pout, slug, prices)
+
     return {"tokens": tok, "usd": usd}
 
 
@@ -98,8 +129,13 @@ async def evaluate(
     """Run the full comparison and return a structured report dict."""
     prices = prices or DEFAULT_PRICES
     if client is None:
+        # Performance: for panels larger than 3 models, use a dedicated thread pool
+        # sized 2*panel so HTTP calls don't contend on asyncio's default executor.
+        panel_size = len(fusion_config.panel)
+        executor_workers = max(panel_size * 2, 8) if panel_size >= 4 else None
         client = ModelClient(fusion_depth=fusion_config.depth + 1,
-                             base_url=fusion_config.base_url, api_key=fusion_config.api_key)
+                             base_url=fusion_config.base_url, api_key=fusion_config.api_key,
+                             executor_workers=executor_workers)
 
     per_task: list[dict[str, Any]] = []
     fusion_lh: list = []   # long-horizon per-task reliability scores
@@ -143,7 +179,8 @@ async def evaluate(
 
         tel = fr.telemetry or {}
         fusion_cost = _cost((tel.get("prompt_tokens", 0), tel.get("completion_tokens", 0)),
-                            fusion_config.caller.slug, prices)
+                            fusion_config.caller.slug, prices,
+                            by_label=tel.get("by_label"))
         base_cost = _cost((base_usage.prompt_tokens, base_usage.completion_tokens),
                           baseline.slug, prices)
 

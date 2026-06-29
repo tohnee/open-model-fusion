@@ -1,0 +1,313 @@
+{
+  "_about": "Expanded superiority benchmark: 23 tasks across 8 domains",
+  "tasks": [
+    {
+      "id": "sup_reconcile_tech_debt",
+      "kind": "fusion_superiority",
+      "domain": "contradiction_reconciliation",
+      "prompt": "Two senior engineers disagree on addressing tech debt: Engineer A says we must rewrite the legacy payment module now before adding new features, because a production outage is imminent. Engineer B says we cannot pause feature work because competitors will ship first and we will lose customers. Reconcile this disagreement properly: identify shared goals, explicitly resolve the contradiction using evidence, name the decisive tradeoffs with quantitative thresholds, call out what evidence both sides are missing, and end with a concrete conditional recommendation.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "common_ground", "category": "factual_accuracy", "weight": 3, "description": "Identifies shared goals: business continuity AND feature velocity", "check": {"any": ["both want", "shared goal", "common ground", "both care about"]}},
+        {"id": "resolve_contradiction", "category": "breadth_depth", "weight": 4, "description": "Rejects binary all-or-nothing framing; proposes incremental/strangler pattern", "check": {"any": ["strangler", "incremental", "not either/or", "rejects binary", "gradual", "phased"]}},
+        {"id": "quant_threshold", "category": "breadth_depth", "weight": 3, "description": "Gives quantitative decision thresholds (error rate, lead time, MTTR)", "check": {"any": ["threshold", "if error rate", "when MTTR", "> 5%", "measure first"]}},
+        {"id": "missing_evidence", "category": "breadth_depth", "weight": 2, "description": "Calls out missing evidence neither side cited", "check": {"any": ["missing evidence", "blind spot", "neither mentions", "don't know", "need to measure"]}},
+        {"id": "recommendation", "category": "presentation", "weight": 2, "description": "Ends with concrete conditional recommendation", "check": {"any": ["recommend", "if X then Y", "therefore"]}},
+        {"id": "cite", "category": "citation", "weight": 1, "description": "Cites Martin Fowler's Strangler Fig pattern or similar authority", "check": {"any": ["Strangler Fig", "martinfowler.com", "Fowler"]}},
+        {"id": "penalty_binary", "category": "factual_accuracy", "weight": -6, "description": "PENALTY: takes an unconditional binary position", "check": {"any": ["must rewrite everything now", "never rewrite", "ignore tech debt completely"]}}
+      ]
+    },
+    {
+      "id": "sup_correct_misconception",
+      "kind": "fusion_superiority",
+      "domain": "error_correction",
+      "prompt": "A blog post widely shared on Hacker News claims: 'Python's GIL means multi-threaded code is always slower than single-threaded, so you should never use threads in Python; only use multiprocessing.' Identify and correct every error and misleading claim in this statement, explain precisely when threads ARE faster in CPython, give concrete counterexamples, and state what you should actually use instead for each workload class.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "gil_correction", "category": "factual_accuracy", "weight": 4, "description": "Corrects that GIL is released during I/O: threads faster for I/O-bound work", "check": {"any": ["I/O", "GIL released", "IO-bound", "waiting", "blocking"]}},
+        {"id": "counterexample", "category": "factual_accuracy", "weight": 3, "description": "Gives concrete counterexample: concurrent HTTP requests / database calls", "check": {"any": ["HTTP", "requests", "database", "network", "API calls"]}},
+        {"id": "extension_modules", "category": "breadth_depth", "weight": 2, "description": "Notes that C extensions like numpy release GIL for CPU work", "check": {"any": ["numpy", "C extension", "releases the GIL", "CPU-bound in C"]}},
+        {"id": "workload_guidance", "category": "breadth_depth", "weight": 3, "description": "Gives correct guidance: threads for IO, multiprocessing for CPU-bound pure Python, asyncio for high-concurrency IO", "check": {"any": ["asyncio", "for CPU-bound use multiprocessing", "for IO use threads"]}},
+        {"id": "overhead_note", "category": "breadth_depth", "weight": 2, "description": "Notes multiprocessing has IPC/overhead costs so it's not always better", "check": {"any": ["IPC overhead", "process startup cost", "memory overhead", "not free"]}},
+        {"id": "cite", "category": "citation", "weight": 1, "description": "Cites Python docs or credible source", "check": {"any": ["docs.python.org", "PEP", "realpython.com"]}},
+        {"id": "penalty_agree", "category": "factual_accuracy", "weight": -6, "description": "PENALTY: agrees with the original claim that threads are never useful", "check": {"any": ["never use threads", "threads are always slower", "always use multiprocessing"]}}
+      ]
+    },
+    {
+      "id": "sup_cross_domain_medicine_stats",
+      "kind": "fusion_superiority",
+      "domain": "cross_domain",
+      "prompt": "A study reports a new diabetes drug reduced relative risk reduction of 30% over 5 years (from 2% to 1.4% absolute risk). The news headline says '30% reduction in heart attacks! Miracle drug.' Explain what is misleading here, compute all relevant statistical measures (ARR, RRR, NNT), explain to both a clinician AND a statistically literate layperson why absolute risk matters, and give concrete guidance on how to report medical risk reductions honestly.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "arr_correct", "category": "factual_accuracy", "weight": 4, "description": "Correctly calculates Absolute Risk Reduction = 0.6%", "check": {"any": ["0.6%", "0.6 percentage point", "absolute risk reduction", "ARR = 0.6"]}},
+        {"id": "nnt_correct", "category": "factual_accuracy", "weight": 4, "description": "Correctly calculates Number Needed to Treat = ~167", "check": {"any": ["NNT", "167", "number needed to treat", "1 / 0.006"]}},
+        {"id": "misleading_explained", "category": "breadth_depth", "weight": 3, "description": "Explains that RRR inflates effect size for low baseline risk", "check": {"any": ["baseline risk", "low absolute risk", "exaggerates", "misleading"]}},
+        {"id": "dual_explanation", "category": "breadth_depth", "weight": 2, "description": "Explains appropriately for both clinician and lay audience", "check": {"any": ["for clinicians", "for patients", "in plain language", "clinically meaningful"]}},
+        {"id": "reporting_guidance", "category": "presentation", "weight": 2, "description": "Gives honest reporting guidelines (always report both ARR and RRR, baseline risk, NNT)", "check": {"any": ["always report", "both absolute and relative", "report baseline", "include NNT"]}},
+        {"id": "cite", "category": "citation", "weight": 1, "description": "Cites CONSORT or evidence-based medicine source", "check": {"any": ["CONSORT", "BMJ", "JAMA", "Cochrane"]}},
+        {"id": "penalty_overstate", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: accepts the 30% claim at face value", "check": {"any": ["30% is a large effect", "miracle drug", "everyone should take it"]}}
+      ]
+    },
+    {
+      "id": "sup_blind_spot_security",
+      "kind": "fusion_superiority",
+      "domain": "blind_spot_detection",
+      "prompt": "You are building a user avatar upload feature. A junior developer proposes: 'We will just accept PNG/JPEG files, check the file extension, and store them on S3 with a random UUID filename. This is secure because UUIDs are unguessable and we don't execute the files.' List every security vulnerability you can find in this design, rank them by severity, give a concrete fix for each, and name at least three classes of attack the developer didn't consider.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "mime_sniffing", "category": "factual_accuracy", "weight": 3, "description": "Identifies that file extension checking is insufficient; MIME sniffing can still execute content", "check": {"any": ["MIME sniff", "content-type", "X-Content-Type-Options", "magic bytes", "not just extension"]}},
+        {"id": "content_sniff", "category": "factual_accuracy", "weight": 2, "description": "Notes polyglot files / SVG XSS risk", "check": {"any": ["SVG", "polyglot", "XSS", "script in image", "cross-site scripting"]}},
+        {"id": "ssrf_path_traversal", "category": "factual_accuracy", "weight": 3, "description": "Identifies path traversal / SSRF risks", "check": {"any": ["path traversal", "../", "SSRF", "server-side request forgery"]}},
+        {"id": "dos_risk", "category": "breadth_depth", "weight": 2, "description": "Identifies decompression bomb / large file DoS risk", "check": {"any": ["decompression bomb", "zip bomb", "large file", "DoS", "size limit", "pixel flood"]}},
+        {"id": "exif_metadata", "category": "breadth_depth", "weight": 2, "description": "Notes EXIF metadata leak (GPS location, camera serial, etc.)", "check": {"any": ["EXIF", "metadata", "GPS", "location leak", "strip metadata"]}},
+        {"id": "imagick_trap", "category": "breadth_depth", "weight": 2, "description": "Mentions image processing library vulnerabilities", "check": {"any": ["ImageMagick", "imagetragick", "vulnerable library", "sandbox processing"]}},
+        {"id": "penalty_says_secure", "category": "factual_accuracy", "weight": -6, "description": "PENALTY: agrees the design is secure", "check": {"any": ["this is secure", "good enough", "no major issues"]}}
+      ]
+    },
+    {
+      "id": "sup_exact_fact_legal",
+      "kind": "fusion_superiority",
+      "domain": "exact_fact_retrieval",
+      "prompt": "State precisely: (1) what year was the US Copyright Act of 1976 signed into law, (2) what is the exact copyright term for an individual author's work created after 1978 (life of author plus how many years), (3) what is the term for works made for hire, (4) what section of title 17 codifies fair use, and (5) name the 2010 case where the Second Circuit held that Google's thumbnail image search was fair use. Be exact; any wrong number or wrong case name means the answer fails.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "year_1976", "category": "factual_accuracy", "weight": 2, "description": "Correctly states signed into law 1976", "check": {"any": ["1976"]}},
+        {"id": "life_plus_70", "category": "factual_accuracy", "weight": 3, "description": "Life of author plus 70 years", "check": {"any": ["life plus 70", "70 years after death", "life + 70"]}},
+        {"id": "work_for_hire", "category": "factual_accuracy", "weight": 3, "description": "Works made for hire: 95 years from publication OR 120 from creation, whichever expires first", "check": {"any": ["95 years", "120 years", "whichever is shorter", "whichever expires first"]}},
+        {"id": "section_107", "category": "factual_accuracy", "weight": 2, "description": "Fair use is codified at 17 U.S.C. § 107", "check": {"any": ["section 107", "17 U.S.C. 107", "§107"]}},
+        {"id": "perfect_10_case", "category": "factual_accuracy", "weight": 4, "description": "Correctly names Perfect 10 v. Amazon / Google", "check": {"any": ["Perfect 10"]}},
+        {"id": "penalty_wrong_term", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: gives wrong term", "check": {"any": ["life plus 50", "50 years after death", "Kelly v. Arriba"]}}
+      ]
+    },
+    {
+      "id": "sup_math_bayes_medical",
+      "kind": "fusion_superiority",
+      "domain": "mathematical_reasoning",
+      "prompt": "A medical test for a rare disease has 99% sensitivity (true positive rate) and 99% specificity (true negative rate). The disease prevalence in the general population is 0.1%. If a randomly selected person tests positive, what is the probability they actually have the disease? Show all steps using Bayes' theorem, define every variable clearly, explain in plain language why the result is counterintuitive, and name the common cognitive fallacy that leads people to misestimate this.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "correct_answer", "category": "factual_accuracy", "weight": 5, "description": "Correct final answer: ~9% or approximately 1/11 (between 8% and 10%)", "check": {"any": ["9%", "9.0%", "8.3%", "~9%", "1/11", "0.09", "0.083"]}},
+        {"id": "define_variables", "category": "breadth_depth", "weight": 3, "description": "Defines variables clearly: P(D)=0.001, P(+|D)=0.99, P(-|not D)=0.99, P(+|not D)=0.01", "check": {"any": ["sensitivity", "specificity", "prevalence", "0.001", "0.99", "0.01"]}},
+        {"id": "show_steps", "category": "factual_accuracy", "weight": 2, "description": "Shows calculation: P(D|+) = (0.99*0.001)/(0.99*0.001 + 0.01*0.999)", "check": {"any": ["0.99 * 0.001", "false positives", "true positives"]}},
+        {"id": "explain_counterintuitive", "category": "presentation", "weight": 2, "description": "Explains why result is counterintuitive: low base rate means many false positives", "check": {"any": ["low prevalence", "base rate", "false positives outnumber", "rare disease"]}},
+        {"id": "name_fallacy", "category": "breadth_depth", "weight": 1, "description": "Names base rate fallacy", "check": {"any": ["base rate fallacy", "base rate neglect"]}}
+      ]
+    },
+    {
+      "id": "sup_math_monty_hall",
+      "kind": "fusion_superiority",
+      "domain": "mathematical_reasoning",
+      "prompt": "Monty Hall variant: 4 doors, one car, three goats. You pick door 1. Host always opens a goat door, opens door 3 to show goat. You can stick with door 1 OR switch to BOTH door 2 AND door 4 (win if car behind either). What probability of winning if you stay? If you switch? Prove using three methods: (1) enumerating all cases before host opens door, (2) conditional probability after host opens door 3, (3) symmetry argument. Explain intuitively why switching is better/worse.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "stay_prob", "category": "factual_accuracy", "weight": 4, "description": "Correct: staying wins with probability 1/4 = 25%", "check": {"any": ["1/4", "25%", "0.25"]}},
+        {"id": "switch_prob", "category": "factual_accuracy", "weight": 5, "description": "Correct: switching wins with probability 3/4 = 75%", "check": {"any": ["3/4", "75%", "0.75"]}},
+        {"id": "enumerate_cases", "category": "breadth_depth", "weight": 2, "description": "Enumerates initial 4 equally likely cases", "check": {"any": ["four cases", "4 equally", "1 in 4"]}},
+        {"id": "conditional_prob", "category": "breadth_depth", "weight": 2, "description": "Uses conditional probability", "check": {"any": ["conditional", "P(car=1", "given that host"]}},
+        {"id": "intuition", "category": "presentation", "weight": 2, "description": "Gives correct intuition: initial guess is 1/4; other 3/4 probability concentrated on unopened doors", "check": {"any": ["initial guess", "concentrated", "the 3/4"]}}
+      ]
+    },
+    {
+      "id": "sup_math_birthday",
+      "kind": "fusion_superiority",
+      "domain": "mathematical_reasoning",
+      "prompt": "Birthday problem: In a room of N people, what is the probability that at least two share a birthday (365 days, ignore leap years)? Derive the formula, find the smallest N where this probability exceeds 50%, AND find the smallest N where it exceeds 90%. Show your calculation steps, explain why the answer is counterintuitively small, and also give the approximate formula using the Poisson approximation.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "50_percent", "category": "factual_accuracy", "weight": 4, "description": "Correct: N=23 gives ~50.7% probability", "check": {"any": ["23 people", "N=23", "23 gives"]}},
+        {"id": "90_percent", "category": "factual_accuracy", "weight": 4, "description": "Correct: N=41 gives ~90.3% probability", "check": {"any": ["41 people", "N=41", "41 gives", "57 people"]}},
+        {"id": "poisson_approx", "category": "breadth_depth", "weight": 2, "description": "Poisson approximation: P ≈ 1 - exp(-N(N-1)/(2*365))", "check": {"any": ["exp(-", "Poisson", "N(N-1)/(2*365)"]}},
+        {"id": "intuition", "category": "presentation", "weight": 2, "description": "Explains counterintuitive: number of PAIRS grows quadratically, not linearly", "check": {"any": ["pairs", "N choose 2", "quadratic", "number of pairs"]}}
+      ]
+    },
+    {
+      "id": "sup_code_parse_csv",
+      "kind": "fusion_superiority",
+      "domain": "code_generation",
+      "prompt": "Write a Python function `parse_sales_csv(filepath: str) -> tuple[list[dict], list[tuple[int, str]]]` that parses CSV sales. Requirements: (1) Handles quoted fields with commas, (2) Skips empty lines and lines starting with '#', (3) Validates 'amount' is positive float, 'date' is YYYY-MM-DD, 'quantity' positive int, (4) Returns invalid rows as list of (line_number, error_message), (5) Strips whitespace from all fields, (6) Handles UTF-8 BOM, (7) Handles both \\r\\n and \\n. Do NOT use pandas or csv module - implement manually. Include a brief explanation of edge cases handled.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "quoted_fields", "category": "factual_accuracy", "weight": 4, "description": "Correctly handles quoted fields containing commas and escaped quotes", "check": {"any": ["quoted field", "escape quote", "double quote", "state machine", "in_quotes"]}},
+        {"id": "skip_comments_empty", "category": "factual_accuracy", "weight": 2, "description": "Skips empty lines and '#' comments", "check": {"any": ["startswith('#')", "skip empty", "comment line"]}},
+        {"id": "validation", "category": "factual_accuracy", "weight": 3, "description": "Validates amount/date/quantity", "check": {"any": ["positive float", "YYYY-MM-DD", "positive integer", "ValueError", "validate"]}},
+        {"id": "bom_handling", "category": "factual_accuracy", "weight": 2, "description": "Handles UTF-8 BOM", "check": {"any": ["BOM", "\\ufeff", "utf-8-sig"]}},
+        {"id": "error_handling", "category": "breadth_depth", "weight": 2, "description": "Returns invalid rows with line numbers; doesn't crash", "check": {"any": ["line_number", "error message", "invalid rows"]}},
+        {"id": "strip_fields", "category": "factual_accuracy", "weight": 1, "description": "Strips whitespace from fields", "check": {"any": [".strip()", "strip whitespace"]}},
+        {"id": "edge_cases_explained", "category": "breadth_depth", "weight": 1, "description": "Mentions edge cases naive implementations miss", "check": {"any": ["edge case", "naive", "miss"]}}
+      ]
+    },
+    {
+      "id": "sup_code_concurrent_bug",
+      "kind": "fusion_superiority",
+      "domain": "code_generation",
+      "prompt": "This Python code has at least 4 distinct concurrency bugs that will cause production failures. Identify every bug, explain why it is a bug, describe the production failure mode, and provide a fixed version. Code: import threading; from collections import defaultdict; class Counter: def __init__(self): self.counts = defaultdict(int); self.total = 0; self.lock = threading.Lock(); def increment(self, key): self.counts[key] += 1; self.total += 1; if self.counts[key] % 1000 == 0: print(f'Key {key} reached {self.counts[key]}'); def get_snapshot(self): return dict(self.counts), self.total; def transfer(self, from_key, to_key, amount): with self.lock: if self.counts[from_key] >= amount: import time; time.sleep(0.001); self.counts[from_key] -= amount; self.counts[to_key] += amount; return True; return False",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "race_condition_increment", "category": "factual_accuracy", "weight": 3, "description": "Identifies race condition: += is not atomic", "check": {"any": ["race condition", "not atomic", "read-modify-write", "lost update"]}},
+        {"id": "inconsistent_snapshot", "category": "factual_accuracy", "weight": 3, "description": "Identifies TOCTOU / inconsistent snapshot in get_snapshot", "check": {"any": ["inconsistent snapshot", "TOCTOU", "not locked"]}},
+        {"id": "deadlock_race", "category": "breadth_depth", "weight": 3, "description": "Identifies check-then-act race in transfer: lock released? No, held during sleep, but state can change? Actually identifies lock held during IO/sleep and check-then-act", "check": {"any": ["check-then-act", "sleep inside lock", "lock held during IO"]}},
+        {"id": "print_race", "category": "breadth_depth", "weight": 2, "description": "Identifies print interleaving / value changed between check and print", "check": {"any": ["print.*interleave", "print not thread-safe", "value changed"]}},
+        {"id": "provides_fix", "category": "factual_accuracy", "weight": 4, "description": "Provides fixed code with proper locking", "check": {"any": ["with self.lock", "hold lock", "properly locked"]}}
+      ]
+    },
+    {
+      "id": "sup_code_regex_email",
+      "kind": "fusion_superiority",
+      "domain": "code_generation",
+      "prompt": "Write a Python function `is_valid_email(email: str) -> bool` that validates emails per RFC 5322 pragmatic subset: (1) Handle '+' aliases, (2) Handle quoted local parts, (3) Handle IP domains (IPv4 and IPv6 in brackets), (4) Reject consecutive/leading/trailing dots, (5) Allow subdomains and long TLDs. Do NOT use stdlib 'email' module. Then list 5 common mistakes naive email validators make.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "plus_alias", "category": "factual_accuracy", "weight": 2, "description": "Allows '+' in local part", "check": {"any": ["\\+", "plus addressing", "tag", "alias"]}},
+        {"id": "quoted_local", "category": "factual_accuracy", "weight": 2, "description": "Handles quoted local parts", "check": {"any": ["quoted", "\"", "double quote"]}},
+        {"id": "ip_domain", "category": "factual_accuracy", "weight": 2, "description": "Handles IP address literal domains in brackets", "check": {"any": ["IP address", "\\[", "bracket", "IPv4", "IPv6"]}},
+        {"id": "consecutive_dots", "category": "factual_accuracy", "weight": 2, "description": "Rejects consecutive/leading/trailing dots", "check": {"any": ["consecutive dot", "\\.\\.", "leading dot", "trailing dot"]}},
+        {"id": "five_mistakes", "category": "breadth_depth", "weight": 3, "description": "Lists 5 common mistakes", "check": {"any": ["5 mistakes", "common mistake", "naive"]}},
+        {"id": "length_check", "category": "factual_accuracy", "weight": 1, "description": "Notes 254 character limit", "check": {"any": ["254", "length limit"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_knights_knaves_hard",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "Knights and knaves advanced: Four islanders Alice, Bob, Carol, Dave. Knights always tell truth, knaves always lie. Alice says: 'Bob and Carol are both knaves.' Bob says: 'At least one of Alice or Dave is a knight.' Carol says: 'Dave and I are the same type.' Dave says nothing. Determine for ALL FOUR whether they are knight or knave. Prove by systematic elimination, and identify if any person's type CANNOT be determined.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "alice_answer", "category": "factual_accuracy", "weight": 3, "description": "Correct: Alice is knave", "check": {"any": ["Alice.*knave", "Alice is knave"]}},
+        {"id": "bob_answer", "category": "factual_accuracy", "weight": 3, "description": "Correct: Bob is knight", "check": {"any": ["Bob.*knight", "Bob is knight"]}},
+        {"id": "carol_dave_ambiguous", "category": "factual_accuracy", "weight": 4, "description": "Correct: There are TWO consistent solutions: Carol=knight,Dave=knight OR Carol=knave,Dave=knave; they cannot be uniquely determined", "check": {"any": ["cannot determine", "two solutions", "both possible", "underdetermined", "ambiguous"]}},
+        {"id": "systematic_elimination", "category": "breadth_depth", "weight": 3, "description": "Systematically checks cases step by step", "check": {"any": ["if Alice is knight", "assume Alice", "leads to contradiction", "systematic"]}},
+        {"id": "penalty_wrong", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: Gives single definite answer for Carol/Dave claiming unique solution", "check": {"any": ["Carol is definitely", "Dave must be", "only one solution"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_zebra",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "Mini Zebra puzzle: 3 houses in a row 1(left),2(middle),3(right). Each has color (red,blue,green), nationality (American,British,Chinese), pet (dog,cat,bird). Clues: 1. American in house 1. 2. Red house immediately left of blue house. 3. House 2 has dog. 4. Green house has cat. 5. British in blue house. Deduce EVERY fact for each house, show step-by-step reasoning.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "house1", "category": "factual_accuracy", "weight": 3, "description": "House 1: American, green, cat", "check": {"any": ["American.*house 1", "house 1.*green", "green.*cat"]}},
+        {"id": "house2", "category": "factual_accuracy", "weight": 3, "description": "House 2: Chinese, red, dog", "check": {"any": ["red.*house 2", "house 2.*dog", "Chinese.*middle"]}},
+        {"id": "house3", "category": "factual_accuracy", "weight": 3, "description": "House 3: British, blue, bird", "check": {"any": ["British.*blue", "blue.*house 3", "house 3.*bird"]}},
+        {"id": "color_deduction", "category": "breadth_depth", "weight": 2, "description": "Correctly deduces color ordering first (red left of blue means red=2, blue=3, green=1)", "check": {"any": ["red immediately left", "red cannot be 3", "blue cannot be 1"]}},
+        {"id": "step_reasoning", "category": "breadth_depth", "weight": 3, "description": "Shows step-by-step deduction", "check": {"any": ["from clue", "therefore", "so house 2", "deduce"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_liars_poker",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "Three logicians walk into a bar. Bartender asks: 'Does everyone want a beer?' Logician 1 says 'I don't know.' Logician 2 says 'I don't know.' Logician 3 says 'Yes!' Explain precisely what each logician deduced, what their answer reveals about their own desire, and prove that Logician 3 can definitively answer yes.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "logician1", "category": "factual_accuracy", "weight": 3, "description": "L1 must want beer: if L1 didn't want beer, L1 would know answer is NO and would say NO", "check": {"any": ["if he didn't want", "if logician 1 did not want", "he would have said no", "logician 1 wants"]}},
+        {"id": "logician2", "category": "factual_accuracy", "weight": 3, "description": "L2 heard L1, knows L1 wants beer; same logic: L2 also wants beer", "check": {"any": ["logician 2 heard", "knows L1 wants", "second logician also wants", "L2 deduced"]}},
+        {"id": "logician3", "category": "factual_accuracy", "weight": 4, "description": "L3 heard both, knows L1 and L2 want beer; L3 says YES so L3 also wants beer; therefore ALL THREE want beer", "check": {"any": ["all three want", "logician 3 also wants", "therefore everyone", "so answer is yes"]}},
+        {"id": "metaknowledge", "category": "breadth_depth", "weight": 3, "description": "Identifies meta-reasoning/knowledge of others' knowledge", "check": {"any": ["meta-knowledge", "knowledge of other", "common knowledge", "what others know", "deduce from"]}},
+        {"id": "penalty_wrong", "category": "factual_accuracy", "weight": -4, "description": "PENALTY: Says you cannot know or gives wrong answer", "check": {"any": ["cannot know", "we don't know", "guessing"]}}
+      ]
+    },
+    {
+      "id": "sup_correct_quantum_myths",
+      "kind": "fusion_superiority",
+      "domain": "error_correction",
+      "prompt": "Correct FIVE common quantum computing myths from popular media. For each: (1) state myth, (2) accurate technical explanation, (3) WHY the myth is wrong, (4) example of what quantum CAN do vs CANNOT do. Address: 'try all possibilities in parallel', 'quantum makes all problems faster', 'quantum replaces classical', 'qubits are 0 and 1 at the same time', 'quantum encryption is unbreakable'.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "parallel_myth", "category": "factual_accuracy", "weight": 3, "description": "Corrects parallel myth: not parallel universes; interference only gives answer probabilistically if circuits constructed correctly", "check": {"any": ["not parallel", "not all possibilities", "interference", "amplitude"]}},
+        {"id": "not_all_faster", "category": "factual_accuracy", "weight": 3, "description": "Corrects: only specific problems get speedup (Shor, Grover, simulation); many problems no quantum speedup", "check": {"any": ["not all problems", "only specific", "Shor", "Grover"]}},
+        {"id": "not_replace_classical", "category": "factual_accuracy", "weight": 2, "description": "Corrects: quantum are accelerators/coprocessors, classical controls everything", "check": {"any": ["not replace", "coprocessor", "accelerator", "classical control"]}},
+        {"id": "qubit_misrep", "category": "factual_accuracy", "weight": 3, "description": "Corrects qubit: superposition with complex amplitudes, not just 0 and 1 simultaneously; measurement collapses", "check": {"any": ["superposition", "complex amplitude", "measurement collapse", "not simply 0 and 1"]}},
+        {"id": "crypto_myth", "category": "factual_accuracy", "weight": 2, "description": "Corrects crypto: QKD detects eavesdropping but not unbreakable; post-quantum crypto exists; Shor breaks RSA not all crypto", "check": {"any": ["not unbreakable", "QKD detect", "post-quantum", "Shor breaks RSA"]}},
+        {"id": "real_example", "category": "breadth_depth", "weight": 2, "description": "Gives concrete example of real quantum advantage", "check": {"any": ["factoring", "molecular simulation", "can't solve NP", "traveling salesman"]}}
+      ]
+    },
+    {
+      "id": "sup_cross_domain_microwave_metal",
+      "kind": "fusion_superiority",
+      "domain": "cross_domain",
+      "prompt": "Explain why you cannot put metal in a microwave. Cover: (1) physics of how microwaves interact with metals (EM induction, eddy currents, skin effect), (2) why thick metal (spoon) mostly safe but thin metal (foil/twist ties/gold rim) dangerous, (3) why metal mesh on door IS safe, (4) mechanism of arcing/sparks, (5) common myth about metal.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "em_induction", "category": "factual_accuracy", "weight": 3, "description": "Explains EM induction: oscillating EM fields drive eddy currents in conductors", "check": {"any": ["eddy current", "Faraday", "induction", "oscillating field", "electrons in metal"]}},
+        {"id": "thick_vs_thin", "category": "factual_accuracy", "weight": 4, "description": "Explains difference: thick metal low resistance, little heating; thin metal high resistance, heats rapidly, field concentrations at sharp points", "check": {"any": ["thick.*safe", "thin.*dangerous", "sharp edge", "high resistance", "low resistance", "spoon is safe", "foil is dangerous"]}},
+        {"id": "mesh_safe", "category": "factual_accuracy", "weight": 3, "description": "Explains door mesh Faraday cage: holes smaller than ~12cm wavelength block microwaves; visible light passes", "check": {"any": ["Faraday cage", "smaller than wavelength", "12 cm", "wavelength", "mesh size", "visible light passes"]}},
+        {"id": "arcing_mechanism", "category": "factual_accuracy", "weight": 3, "description": "Explains arcing: high field at sharp points ionizes air, corona discharge, dielectric breakdown", "check": {"any": ["arc", "spark", "ionize", "corona discharge", "breakdown", "electric field concentration", "sharp point"]}},
+        {"id": "myth_correction", "category": "breadth_depth", "weight": 2, "description": "Corrects myth: not all metal dangerous; microwave walls ARE metal", "check": {"any": ["walls are metal", "not all metal", "myth", "spoon won't explode"]}}
+      ]
+    },
+    {
+      "id": "sup_cross_domain_cpu_cache",
+      "kind": "fusion_superiority",
+      "domain": "cross_domain",
+      "prompt": "Explain CPU cache coherence problem and why it matters for concurrent programming. Cover: (1) why caches exist (locality, memory wall), (2) cache coherence problem (private per-core L1/L2 can have stale views), (3) MESI protocol states (Modified/Exclusive/Shared/Invalid), (4) why need memory barriers/fences not just atomic ops, (5) concrete example of naive 'done' flag failing due to visibility.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "why_cache", "category": "factual_accuracy", "weight": 2, "description": "Explains memory wall: CPU ~1ns vs RAM ~100ns; locality of reference", "check": {"any": ["memory wall", "locality", "faster than RAM", "100x faster"]}},
+        {"id": "coherence_problem", "category": "factual_accuracy", "weight": 3, "description": "Explains stale views: core A writes to its cache, core B sees old value; no automatic visibility", "check": {"any": ["stale view", "private cache", "not automatically visible", "inconsistent view"]}},
+        {"id": "mesi_protocol", "category": "factual_accuracy", "weight": 3, "description": "Explains MESI four states", "check": {"any": ["Modified", "Exclusive", "Shared", "Invalid", "MESI"]}},
+        {"id": "memory_barriers", "category": "factual_accuracy", "weight": 3, "description": "Explains memory barriers: acquire/release semantics prevent reordering and ensure visibility", "check": {"any": ["memory barrier", "memory fence", "acquire", "release", "reordering"]}},
+        {"id": "concrete_example", "category": "factual_accuracy", "weight": 3, "description": "Concrete example: spin loop while(!done){} loops forever without volatile/memory barrier", "check": {"any": ["while.*done", "spin loop", "visibility", "loop forever", "volatile"]}}
+      ]
+    },
+    {
+      "id": "sup_exact_fact_tcp_quic",
+      "kind": "fusion_superiority",
+      "domain": "exact_fact_retrieval",
+      "prompt": "Answer precisely: (1) What transport protocol does HTTP/3 use? (2) How many RTTs does TLS 1.3 + QUIC handshake take on first connection (vs TLS 1.3 over TCP)? (3) What year was QUIC standardized as RFC 9000? (4) What stream multiplexing feature solves head-of-line blocking that HTTP/2 over TCP has? (5) Which company first deployed QUIC at scale?",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "quic_protocol", "category": "factual_accuracy", "weight": 2, "description": "HTTP/3 uses QUIC over UDP", "check": {"any": ["QUIC", "UDP"]}},
+        {"id": "handshake_rtt", "category": "factual_accuracy", "weight": 4, "description": "1 RTT for QUIC first connection (vs 2 RTT for TLS over TCP)", "check": {"any": ["1 RTT", "1 round trip", "one RTT", "1-RTT", "2 RTT for TCP"]}},
+        {"id": "rfc_year", "category": "factual_accuracy", "weight": 2, "description": "RFC 9000 published 2022", "check": {"any": ["2022", "RFC 9000"]}},
+        {"id": "hol_blocking", "category": "factual_accuracy", "weight": 3, "description": "Per-stream flow control: lost packet only blocks that stream, not all multiplexed streams", "check": {"any": ["per-stream", "independent streams", "only blocks that stream", "head of line"]}},
+        {"id": "google_deployed", "category": "factual_accuracy", "weight": 3, "description": "Google first deployed QUIC at scale (gQUIC in Chrome/YouTube)", "check": {"any": ["Google", "gQUIC", "YouTube", "Chrome"]}}
+      ]
+    },
+    {
+      "id": "sup_exact_fact_cap_theorem",
+      "kind": "fusion_superiority",
+      "domain": "exact_fact_retrieval",
+      "prompt": "About CAP theorem: (1) Formal definitions of C, A, P, (2) Who conjectured CAP and who proved it, with years, (3) Name CA/CP/AP systems with concrete production examples, (4) Major CRITICISM of CAP by modern distributed systems researchers, (5) What PACELC theorem adds.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "cap_defs", "category": "factual_accuracy", "weight": 3, "description": "C=linearizability/strong consistency, A=every request gets non-error response, P=partition tolerance", "check": {"any": ["linearizab", "every request", "partition", "network split", "strong consistency"]}},
+        {"id": "who_when", "category": "factual_accuracy", "weight": 2, "description": "Eric Brewer 2000 conjecture; Gilbert/Lynch proved 2002", "check": {"any": ["Brewer", "Eric Brewer", "2000", "Gilbert", "Lynch"]}},
+        {"id": "examples", "category": "factual_accuracy", "weight": 3, "description": "CP=ZooKeeper/etcd; AP=Cassandra/DynamoDB/Riak; CA=single-node RDBMS", "check": {"any": ["ZooKeeper", "etcd", "Cassandra", "DynamoDB", "Riak"]}},
+        {"id": "criticism", "category": "factual_accuracy", "weight": 3, "description": "Criticism: ignores latency tradeoff even without partitions, binary choice is false, rare partitions vs normal operation", "check": {"any": ["latency", "only partitions", "not binary", "false dichotomy", "CAP twelve years later"]}},
+        {"id": "pacelc", "category": "factual_accuracy", "weight": 3, "description": "PACELC adds Else Latency vs Consistency tradeoff during normal operation (no partition)", "check": {"any": ["PACELC", "Else", "Latency", "normal operation"]}}
+      ]
+    },
+    {
+      "id": "sup_reconcile_monolith_microservices",
+      "kind": "fusion_superiority",
+      "domain": "contradiction_reconciliation",
+      "prompt": "Two architects disagree: A says microservices always better; monoliths legacy, every modern company does microservices, startups will rewrite. B says microservices complexity trap; almost all better off with well-structured monolith; only FAANG needs them, many regret it. Reconcile: identify contexts each correct, name concrete engineering maturity prerequisites for microservices, quantify team size thresholds, give conditional recommendation.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "context_matters", "category": "factual_accuracy", "weight": 4, "description": "Rejects binary; says depends on context/team size/maturity", "check": {"any": ["it depends", "depends on", "context", "neither is always"]}},
+        {"id": "prerequisites", "category": "breadth_depth", "weight": 4, "description": "Names prerequisites: DevOps/CI/CD, observability, platform team, service discovery, bounded contexts, test automation", "check": {"any": ["DevOps", "CI/CD", "observability", "platform team", "bounded context", "service discovery", "tracing"]}},
+        {"id": "team_size_threshold", "category": "factual_accuracy", "weight": 3, "description": "Quantifies threshold: ~20-50+ engineers for microservices; <10 almost always monolith better", "check": {"any": ["20 engineer", "50 engineer", "team size", "small teams", "fewer than 10"]}},
+        {"id": "modular_monolith", "category": "breadth_depth", "weight": 2, "description": "Identifies middle ground: modular monolith with clear boundaries, extract later via strangler", "check": {"any": ["modular monolith", "well-structured monolith", "extract later", "strangler", "monolith first"]}},
+        {"id": "conditional_recommendation", "category": "presentation", "weight": 2, "description": "Gives concrete conditional recommendation", "check": {"any": ["recommend", "if you have", "start with monolith"]}}
+      ]
+    },
+    {
+      "id": "sup_blind_spot_idempotency",
+      "kind": "fusion_superiority",
+      "domain": "blind_spot_detection",
+      "prompt": "Junior engineer designs payment POST /charge: SELECT WHERE order_id=X; if not exists INSERT and process. Claims this is idempotent. Identify EVERY concurrency/correctness bug, explain production failure modes, give correct idempotency key pattern, list at least 3 edge cases naive implementations miss (retry storms, in-flight duplicates, partial processing).",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "race_condition", "category": "factual_accuracy", "weight": 4, "description": "Identifies check-then-act race: two concurrent requests both SELECT not found, both INSERT/charge (double charge)", "check": {"any": ["race condition", "check-then-act", "double charge", "concurrent", "not atomic"]}},
+        {"id": "unique_constraint", "category": "factual_accuracy", "weight": 3, "description": "Correct fix: UNIQUE constraint on idempotency key at DB; use upsert/INSERT ON CONFLICT", "check": {"any": ["unique constraint", "unique index", "upsert", "INSERT ON CONFLICT", "database constraint"]}},
+        {"id": "in_flight_requests", "category": "factual_accuracy", "weight": 3, "description": "Identifies in-flight duplicates: second request arrives while first still processing, doesn't see INSERT yet; need in-progress state/lock", "check": {"any": ["in flight", "in-progress", "still processing", "concurrent in flight", "lock or"]}},
+        {"id": "retry_storm", "category": "breadth_depth", "weight": 2, "description": "Identifies retry storms: client retries timeout while processing continues; need to return same result for retries", "check": {"any": ["retry storm", "client retr", "idempotent return same", "return previous response"]}},
+        {"id": "non_atomic_processing", "category": "breadth_depth", "weight": 2, "description": "Identifies partial processing: payment succeeds but INSERT fails (crash between); need transaction or outbox pattern", "check": {"any": ["partial processing", "crash between", "transaction", "outbox"]}},
+        {"id": "three_edge_cases", "category": "breadth_depth", "weight": 2, "description": "Lists at least 3 edge cases missed", "check": {"any": ["three edge", "3 edge", "other edge case", "miss"]}},
+        {"id": "penalty_agrees_idempotent", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: agrees this is idempotent", "check": {"any": ["this is idempotent", "correct approach", "works correctly"]}}
+      ]
+    }
+  ]
+}

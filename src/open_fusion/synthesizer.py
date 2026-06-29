@@ -35,20 +35,22 @@ async def write(
     params: Params,
     *,
     tel: Telemetry | None = None,
+    tools: tuple = (),
 ) -> str:
+    labeled = label_responses(responses)
     analysis_json = json.dumps(analysis.to_dict())
     messages = [
         {"role": "system", "content": SYNTHESIS_SYSTEM},
-        {"role": "user", "content": SYNTHESIS_USER(question, analysis_json)},
+        {"role": "user", "content": SYNTHESIS_USER(question, analysis_json, labeled)},
     ]
     # synthesis_ms 来自这里的端到端测量：包含一次模型完成 + 网络往返 + JSON 编码。
     # 与 logging 共用同一个 t0，确保"日志看到的耗时 == telemetry 里的 synthesis_ms"。
     t0 = time.monotonic()
     log_event("synthesis", "start", writer=writer.slug,
               question_chars=len(question), analysis_chars=len(analysis_json),
-              tools_disabled=True)
+              tools_disabled=not tools)
     try:
-        comp = await client.complete(writer, messages, tools=(), params=params)  # no tools: frozen evidence
+        comp = await client.complete(writer, messages, tools=tools, params=params)
     except Exception as e:
         log_event("synthesis", "error", writer=writer.slug,
                   duration_ms=int((time.monotonic() - t0) * 1000),

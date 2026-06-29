@@ -1,0 +1,143 @@
+{
+  "_about": "Hard logic reasoning tasks designed to test fusion capabilities: each task requires multi-step reasoning where different models have complementary blind spots",
+  "tasks": [
+    {
+      "id": "sup_logic_5person_knights",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "Five islanders Alice, Bob, Carol, Dave, Eve. Knights always tell truth, knaves always lie. Alice says: 'Bob is a knight.' Bob says: 'Carol and Dave are of the same type.' Carol says: 'Eve is a knave.' Dave says: 'Alice and Bob are of different types.' Eve says: 'At least two of us are knights.' Determine ALL FIVE types. Prove by systematic elimination of all 32 possibilities. Identify every contradiction in incorrect solutions.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "alice_correct", "category": "factual_accuracy", "weight": 3, "description": "Correct: Alice is knight", "check": {"any": ["Alice.*knight", "Alice is (a )?knight"]}},
+        {"id": "bob_correct", "category": "factual_accuracy", "weight": 3, "description": "Correct: Bob is knight", "check": {"any": ["Bob.*knight", "Bob is (a )?knight"]}},
+        {"id": "carol_correct", "category": "factual_accuracy", "weight": 3, "description": "Correct: Carol is knight", "check": {"any": ["Carol.*knight", "Carol is (a )?knight"]}},
+        {"id": "dave_correct", "category": "factual_accuracy", "weight": 3, "description": "Correct: Dave is knave", "check": {"any": ["Dave.*knave", "Dave is (a )?knave"]}},
+        {"id": "eve_correct", "category": "factual_accuracy", "weight": 3, "description": "Correct: Eve is knave", "check": {"any": ["Eve.*knave", "Eve is (a )?knave"]}},
+        {"id": "systematic_proof", "category": "breadth_depth", "weight": 4, "description": "Systematically eliminates possibilities or chains deductions step by step", "check": {"any": ["if Alice", "assume", "case 1", "systematic", "eliminat", "therefore", "contradiction"]}},
+        {"id": "contradiction_id", "category": "breadth_depth", "weight": 2, "description": "Identifies specific contradictions in wrong assignments", "check": {"any": ["contradiction", "impossible", "cannot be", "inconsistent"]}},
+        {"id": "penalty_wrong", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: Wrong answer for any person", "check": {"any": ["Alice is knave", "Bob is knave", "Carol is knave", "Dave is knight", "Eve is knight"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_einstein_5houses",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "Einstein's Riddle (5 houses): 5 houses in a row, each with a different color (red, green, white, yellow, blue), nationality (Brit, Dane, Swede, Norwegian, German), drink (tea, coffee, milk, beer, water), smoke (Pall Mall, Dunhill, Blends, Blue Master, Prince), pet (dog, bird, cat, horse, fish). Clues: 1. Brit lives in red house. 2. Swede keeps dogs. 3. Dane drinks tea. 4. Green house immediately left of white. 5. Green house owner drinks coffee. 6. Person who smokes Pall Mall keeps birds. 7. Yellow house owner smokes Dunhill. 8. Person in center house drinks milk. 9. Norwegian lives in first house. 10. Person who smokes Blends lives next to cat owner. 11. Person who keeps horse lives next to Dunhill smoker. 12. Person who smokes Blue Master drinks beer. 13. German smokes Prince. 14. Norwegian lives next to blue house. 15. Person who smokes Blends has neighbor who drinks water. Solve ALL 25 attributes. Show step-by-step deduction chain.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "house1", "category": "factual_accuracy", "weight": 4, "description": "House 1: Norwegian, yellow, water, Dunhill, cat", "check": {"any": ["Norwegian.*house 1", "yellow.*house 1", "water.*house 1", "Dunhill.*house 1", "cat.*house 1"]}},
+        {"id": "house2", "category": "factual_accuracy", "weight": 4, "description": "House 2: Dane, blue, tea, Blends, horse", "check": {"any": ["Dane.*house 2", "blue.*house 2", "tea.*house 2", "Blends.*house 2", "horse.*house 2"]}},
+        {"id": "house3", "category": "factual_accuracy", "weight": 4, "description": "House 3: Brit, red, milk, Pall Mall, bird", "check": {"any": ["Brit.*house 3", "red.*house 3", "milk.*house 3", "Pall Mall.*house 3", "bird.*house 3"]}},
+        {"id": "house4", "category": "factual_accuracy", "weight": 4, "description": "House 4: German, green, coffee, Prince, fish", "check": {"any": ["German.*house 4", "green.*house 4", "coffee.*house 4", "Prince.*house 4", "fish.*house 4"]}},
+        {"id": "house5", "category": "factual_accuracy", "weight": 4, "description": "House 5: Swede, white, beer, Blue Master, dog", "check": {"any": ["Swede.*house 5", "white.*house 5", "beer.*house 5", "Blue Master.*house 5", "dog.*house 5"]}},
+        {"id": "fish_german", "category": "factual_accuracy", "weight": 3, "description": "Explicitly identifies German owns the fish", "check": {"any": ["German.*fish", "fish.*German"]}},
+        {"id": "deduction_chain", "category": "breadth_depth", "weight": 4, "description": "Shows clear step-by-step deduction with reasoning for each step", "check": {"any": ["from clue", "therefore", "since", "deduce", "step 1", "first.*deduce"]}},
+        {"id": "penalty_wrong_fish", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: Wrong fish owner", "check": {"any": ["Norwegian.*fish", "Dane.*fish", "Brit.*fish", "Swede.*fish"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_modal_boxes",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "Three boxes: one contains gold, two are empty. Each box has a statement on it. Box A says: 'The gold is not in this box.' Box B says: 'The gold is in box C.' Box C says: 'Box A's statement is true.' Exactly ONE statement is true and the other two are false. Determine which box has the gold, which statements are true/false, and prove your answer by checking all three possibilities (gold in A, gold in B, gold in C). For each case, show which statements would be true/false and explain why exactly one must be true. If no case satisfies 'exactly one true', say so explicitly and explain the paradox.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "case_analysis", "category": "breadth_depth", "weight": 5, "description": "Checks all three cases: gold in A, gold in B, gold in C", "check": {"any": ["case 1", "if gold in A", "if gold in B", "if gold in C", "all three"]}},
+        {"id": "case_a", "category": "factual_accuracy", "weight": 3, "description": "If gold in A: A says 'not in A' = false; B says 'in C' = false; C says 'A true' = false. Result: 0 true", "check": {"any": ["gold in A.*false", "A.*false.*B.*false.*C.*false", "zero true", "0 true"]}},
+        {"id": "case_b", "category": "factual_accuracy", "weight": 3, "description": "If gold in B: A says 'not in A' = true; B says 'in C' = false; C says 'A true' = true. Result: 2 true", "check": {"any": ["gold in B.*true", "A true.*B false.*C true", "two true", "2 true"]}},
+        {"id": "case_c", "category": "factual_accuracy", "weight": 3, "description": "If gold in C: A says 'not in A' = true; B says 'in C' = true; C says 'A true' = true. Result: 3 true", "check": {"any": ["gold in C.*true", "A true.*B true.*C true", "three true", "3 true", "all true"]}},
+        {"id": "paradox", "category": "factual_accuracy", "weight": 5, "description": "Correctly identifies the puzzle is UNSOLVABLE: no case gives exactly one true statement (0, 2, 3 true respectively)", "check": {"any": ["unsolvable", "no solution", "impossible", "paradox", "no valid", "none.*exactly one"]}},
+        {"id": "penalty_wrong", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: Claims a single box without noticing the paradox", "check": {"any": ["gold is in box A", "gold is in box B", "gold is in box C", "answer is box"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_temporal_sequencing",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "Six events A, B, C, D, E, F occurred in a single day. Determine the exact chronological order from these constraints: (1) A happened before B. (2) C happened after D but before E. (3) F happened between A and C. (4) B happened before D. (5) E happened after F. (6) D happened before A is FALSE (i.e., A before D). (7) C did NOT happen immediately after F (there is at least one event between F and C). Show your complete reasoning chain, list every constraint used at each step, and prove the unique ordering or identify if multiple orderings are possible.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "partial_order", "category": "factual_accuracy", "weight": 5, "description": "Correct partial order: A < B < D < C < E and A < F < C, with at least one event between F and C", "check": {"any": ["A.*B.*D.*C.*E", "A.*F.*C", "A before B", "B before D", "D before C"]}},
+        {"id": "constraint_chain", "category": "breadth_depth", "weight": 4, "description": "Shows step-by-step constraint application with which constraint is used at each step", "check": {"any": ["constraint 1", "from rule", "step 1", "therefore", "next.*deduce"]}},
+        {"id": "all_constraints", "category": "breadth_depth", "weight": 3, "description": "Uses all 7 constraints explicitly including constraint 7", "check": {"any": ["constraint 7", "rule 7", "not immediately", "at least one.*between"]}},
+        {"id": "ambiguity_check", "category": "breadth_depth", "weight": 3, "description": "Checks whether the ordering is unique or ambiguous", "check": {"any": ["unique", "ambiguous", "multiple valid", "two possible", "cannot determine"]}},
+        {"id": "penalty_wrong_order", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: Wrong ordering (e.g. D before A, or E before C)", "check": {"any": ["D.*before A", "E.*before C", "C.*before D"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_hats_prisoners",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "10 prisoners are lined up in a row facing forward. Each can see all prisoners ahead of them (in front) but not behind. A warden places either a RED or BLUE hat on each prisoner. The warden asks each prisoner from back to front: 'What color is your hat?' Each prisoner can hear all previous answers. Prisoners can agree on a strategy beforehand. The optimal strategy guarantees at least 9 correct answers. (1) Explain the strategy. (2) Prove why it guarantees 9 correct. (3) Prove why you cannot guarantee 10 correct. (4) What role does the first prisoner (who answers first, from the back) play?",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "parity_strategy", "category": "factual_accuracy", "weight": 5, "description": "Correct strategy: first prisoner counts parity (e.g. even/odd number of red hats) and answers based on that; subsequent prisoners use parity to deduce their own hat color", "check": {"any": ["parity", "even.*odd", "count.*red", "XOR", "modulo"]}},
+        {"id": "guarantee_9", "category": "factual_accuracy", "weight": 4, "description": "Proves 9 correct: prisoners 2-10 can always deduce their color from parity + previous answers", "check": {"any": ["9 correct", "9 of 10", "all but first", "guaranteed 9", "last 9"]}},
+        {"id": "cannot_10", "category": "factual_accuracy", "weight": 4, "description": "Proves cannot guarantee 10: first prisoner has NO information about own hat, so 50/50 chance", "check": {"any": ["cannot.*10", "impossible.*10", "no information.*own", "50.*50", "fifty.*fifty", "first.*cannot know"]}},
+        {"id": "first_role", "category": "factual_accuracy", "weight": 3, "description": "First prisoner sacrifices themselves: encodes parity info for everyone else, own answer may be wrong", "check": {"any": ["sacrifice", "encodes", "parity.*others", "first.*information", "first.*50"]}},
+        {"id": "step_proof", "category": "breadth_depth", "weight": 3, "description": "Shows detailed step-by-step example or formal proof", "check": {"any": ["example", "step by step", "formal proof", "induction", "suppose"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_knights_knaves_spies",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "On an island with knights (always truth), knaves (always lie), and spies (can say anything). You meet 4 people: P, Q, R, S. Exactly one is a spy. P says: 'Q is a knight.' Q says: 'R is a spy.' R says: 'P is a knave.' S says: 'I am a knight.' Determine all 4 types. Prove by checking all possible spy assignments (P is spy, Q is spy, R is spy, S is spy). For each case, show whether the remaining statements are consistent.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "p_type", "category": "factual_accuracy", "weight": 3, "description": "Correct: P is knave", "check": {"any": ["P is knave", "P.*knave"]}},
+        {"id": "q_type", "category": "factual_accuracy", "weight": 3, "description": "Correct: Q is knight", "check": {"any": ["Q is knight", "Q.*knight"]}},
+        {"id": "r_type", "category": "factual_accuracy", "weight": 3, "description": "Correct: R is spy", "check": {"any": ["R is spy", "R.*spy"]}},
+        {"id": "s_type", "category": "factual_accuracy", "weight": 3, "description": "Correct: S is knave", "check": {"any": ["S is knave", "S.*knave"]}},
+        {"id": "spy_check", "category": "breadth_depth", "weight": 4, "description": "Checks all 4 possible spy assignments systematically", "check": {"any": ["if P is spy", "if Q is spy", "if R is spy", "if S is spy", "case 1", "all four"]}},
+        {"id": "consistency", "category": "breadth_depth", "weight": 3, "description": "For each case, checks consistency of remaining statements with knight/knave rules", "check": {"any": ["consistent", "inconsistent", "contradiction"]}},
+        {"id": "penalty_wrong", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: Wrong spy identification", "check": {"any": ["P is spy", "Q is spy", "S is spy"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_self_reference",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "Analyze this self-referential puzzle: Card 1 says 'Exactly one of these three cards has a true statement.' Card 2 says 'Card 1's statement is false.' Card 3 says 'Card 2's statement is true.' For each card, determine if its statement is true or false. Consider all 8 possible truth assignments (T/T/T, T/T/F, ..., F/F/F) and show which are self-consistent. Is there a unique solution? If so, prove it. If not, explain why and identify all consistent solutions.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "card1_analysis", "category": "factual_accuracy", "weight": 4, "description": "Correct analysis of Card 1: if exactly one is true, that must be Card 1 itself, which creates paradox. If Card 1 is true, then exactly one is true = Card 1 = OK only if Cards 2,3 are false. If Card 1 is false, then NOT exactly one is true (either 0, 2, or 3 are true).", "check": {"any": ["card 1.*true", "card 1.*false", "if exactly one", "paradox"]}},
+        {"id": "card2_analysis", "category": "factual_accuracy", "weight": 4, "description": "Correct: Card 2 says Card 1 is false. If Card 1 is true, Card 2 is false. If Card 1 is false, Card 2 is true.", "check": {"any": ["card 2.*card 1", "if card 1.*true.*card 2.*false", "if card 1.*false.*card 2.*true"]}},
+        {"id": "card3_analysis", "category": "factual_accuracy", "weight": 4, "description": "Correct: Card 3 says Card 2 is true. So Card 3 and Card 2 have the same truth value.", "check": {"any": ["card 3.*card 2", "same.*truth", "card 3.*true.*card 2.*true"]}},
+        {"id": "enumeration", "category": "breadth_depth", "weight": 4, "description": "Enumerates multiple truth assignments and checks each for consistency", "check": {"any": ["T/T/T", "case 1", "assignment", "all 8", "systematic"]}},
+        {"id": "solution_identification", "category": "breadth_depth", "weight": 3, "description": "Identifies the correct solution: Card1=true, Card2=false, Card3=false (exactly one true = Card 1) OR identifies no unique solution with proof", "check": {"any": ["Card 1.*true.*Card 2.*false.*Card 3.*false", "T/F/F", "unique solution", "no unique"]}},
+        {"id": "penalty_illogical", "category": "factual_accuracy", "weight": -4, "description": "PENALTY: Assigns truth values without checking self-referential consistency", "check": {"any": ["all true", "all false", "without checking"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_constraint_optimization",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "A conference scheduler must assign 4 talks (A, B, C, D) to 4 time slots (1=9am, 2=10am, 3=11am, 4=noon). Constraints: (1) Talk A cannot be at 9am (speaker arrives late). (2) Talk B must be before Talk C. (3) Talk D must be immediately after Talk A (D = A+1). (4) Talk C cannot be at noon. (5) No two talks share a slot. Find ALL valid schedules. Prove your answer by showing your reasoning and listing every valid assignment.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "valid_schedules", "category": "factual_accuracy", "weight": 5, "description": "Correct: The valid schedules are A=2,D=3,B=1,C=4 (wait C cannot be noon) or A=3,D=4,B=1,C=2 or A=2,D=3,B=4,C=1. Must identify ALL valid ones.", "check": {"any": ["A=2.*D=3", "A=3.*D=4", "valid schedule", "A.*slot 2"]}},
+        {"id": "constraint_b_before_c", "category": "factual_accuracy", "weight": 3, "description": "Correctly applies B before C constraint", "check": {"any": ["B before C", "B.*earlier.*C", "slot.*B.*<.*slot.*C"]}},
+        {"id": "constraint_d_after_a", "category": "factual_accuracy", "weight": 3, "description": "Correctly applies D immediately after A constraint", "check": {"any": ["D.*immediately.*after.*A", "D = A.*1", "D.*A\\+1", "consecutive"]}},
+        {"id": "constraint_c_not_noon", "category": "factual_accuracy", "weight": 2, "description": "Correctly applies C not at noon", "check": {"any": ["C.*not.*noon", "C.*not.*4", "C cannot be noon"]}},
+        {"id": "exhaustive_check", "category": "breadth_depth", "weight": 4, "description": "Shows systematic elimination or exhaustive search of possibilities", "check": {"any": ["all valid", "exhaustive", "systematic", "eliminat", "permutation", "24"]}},
+        {"id": "penalty_incomplete", "category": "factual_accuracy", "weight": -3, "description": "PENALTY: Misses valid schedules or includes invalid ones", "check": {"any": ["only solution", "unique"]}}
+      ]
+    },
+    {
+      "id": "sup_logic_meta_knowledge",
+      "kind": "fusion_superiority",
+      "domain": "logical_reasoning",
+      "prompt": "Alice and Bob each receive a card with a number 1-5 (different numbers). They can see their own number but not the other's. Alice says: 'I don't know your number.' Bob says: 'I don't know your number either.' Alice says: 'I still don't know your number.' Bob says: 'Now I know your number!' (1) Prove what Alice's number must be. (2) Prove what Bob's number must be. (3) Explain the meta-reasoning: what does each statement reveal about the speaker's knowledge? (4) Why does Alice's second 'I don't know' give Bob enough information? Hint: If Alice has 1, she knows Bob has 2-5 (4 options). After Bob says 'I don't know', Alice can eliminate some. After Alice says 'I still don't know', Bob can narrow further.",
+      "excluded_domains": [],
+      "rubric": [
+        {"id": "alice_number", "category": "factual_accuracy", "weight": 4, "description": "Correct: Alice has 3 (with 1: after Bob doesn't know, Alice would know if she had 1 that Bob has 2; with 2: after Bob doesn't know and Alice doesn't know, Bob would know if Alice has 2; with 3: Bob can deduce after Alice's second 'don't know')", "check": {"any": ["Alice.*3", "Alice has 3", "number 3"]}},
+        {"id": "bob_number", "category": "factual_accuracy", "weight": 4, "description": "Correct: Bob has 4 (after Alice's second 'don't know', Bob with 4 can deduce Alice must be 3)", "check": {"any": ["Bob.*4", "Bob has 4", "number 4"]}},
+        {"id": "meta_reasoning", "category": "breadth_depth", "weight": 4, "description": "Explains meta-reasoning: each 'I don't know' eliminates possibilities for the other player", "check": {"any": ["meta", "eliminat", "each statement.*information", "common knowledge", "nested knowledge"]}},
+        {"id": "first_dont_know", "category": "breadth_depth", "weight": 3, "description": "Explains Alice's first 'don't know' means she doesn't have a number that would let her deduce Bob's (i.e., not 5, since if Alice=5, Bob=1-4 and she can't tell; but actually if Alice=1, Bob could be 2-5 so she can't tell either)", "check": {"any": ["first.*don't know", "Alice.*doesn't know", "eliminat.*5"]}},
+        {"id": "second_dont_know", "category": "breadth_depth", "weight": 3, "description": "Explains Alice's second 'don't know' is the key: after Bob's 'don't know', Alice can narrow but still can't determine, which tells Bob she's not 1 or 2", "check": {"any": ["second.*don't know", "still.*don't know", "not 1.*not 2"]}},
+        {"id": "penalty_wrong", "category": "factual_accuracy", "weight": -5, "description": "PENALTY: Wrong final answer", "check": {"any": ["Alice has 1", "Alice has 5", "Bob has 1", "Bob has 5"]}}
+      ]
+    }
+  ]
+}

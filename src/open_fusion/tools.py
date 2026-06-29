@@ -101,6 +101,44 @@ def _host_excluded(url: str, excluded: list[str]) -> bool:
     return False
 
 
+def _is_private_ip(host: str) -> bool:
+    """Check if host resolves to a private/loopback/link-local address (SSRF guard)."""
+    import ipaddress
+    try:
+        addr_infos = socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        return False
+    for family, _, _, _, sockaddr in addr_infos:
+        ip_str = sockaddr[0]
+        try:
+            ip = ipaddress.ip_address(ip_str)
+        except ValueError:
+            continue
+        if (ip.is_loopback or ip.is_private or ip.is_link_local or
+                ip.is_multicast or ip.is_reserved or ip.is_unspecified):
+            return True
+    return False
+
+
+def _validate_fetch_url(url: str) -> str | None:
+    """Validate URL for safety; returns error message or None if ok."""
+    try:
+        parsed = urllib.parse.urlparse(url)
+    except Exception:
+        return "invalid url"
+    if parsed.scheme not in ("http", "https"):
+        return f"blocked scheme: {parsed.scheme} (only http/https allowed)"
+    host = parsed.hostname
+    if not host:
+        return "missing host"
+    host_l = host.lower()
+    if host_l in ("localhost", "localhost.localdomain", "ip6-localhost", "ip6-loopback"):
+        return f"blocked host: {host}"
+    if _is_private_ip(host):
+        return f"blocked private/loopback address: {host}"
+    return None
+
+
 async def execute_tool(name: str, arguments: dict[str, Any], *,
                        excluded_domains: list[str] | None = None) -> dict[str, Any]:
     """Dispatch one tool call. Always returns a JSON-serialisable dict with an `ok`
@@ -122,6 +160,9 @@ async def execute_tool(name: str, arguments: dict[str, Any], *,
 async def _web_fetch(url: str, excluded: list[str]) -> dict[str, Any]:
     if not url:
         return {"ok": False, "error": "no url"}
+    # SSRF guard: scheme + private/loopback/link-local IP check BEFORE any DNS/network
+    if err := _validate_fetch_url(url):
+        return {"ok": False, "error": err, "url": url}
     # excluded-domain check happens BEFORE any network call -> deterministic offline.
     if _host_excluded(url, excluded):
         return {"ok": False, "error": "domain excluded", "url": url}

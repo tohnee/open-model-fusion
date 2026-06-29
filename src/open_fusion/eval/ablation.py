@@ -244,8 +244,11 @@ async def run_ablation(
     arms = build_canonical_arms(models, judge, panel_size=panel_size)
     base = base or FusionConfig(panel=arms[-1].panel, judge=judge)
     if client is None:
+        panel_size = len(base.panel)
+        executor_workers = max(panel_size * 2, 8) if panel_size >= 4 else None
         client = ModelClient(fusion_depth=base.depth + 1,
-                             base_url=base.base_url, api_key=base.api_key)
+                             base_url=base.base_url, api_key=base.api_key,
+                             executor_workers=executor_workers)
 
     # per-arm, per-task normalized scores
     arm_scores: dict[str, list[AvgScore]] = {}

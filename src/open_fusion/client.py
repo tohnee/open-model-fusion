@@ -73,9 +73,16 @@ class ModelClient:
                  referer: str | None = None, title: str = "open-fusion",
                  executor_workers: int | None = None) -> None:
         self.fusion_depth = fusion_depth
-        self.base_url = (base_url or os.getenv("OPEN_FUSION_BASE_URL") or DEFAULT_BASE_URL).rstrip("/")
-        self.api_key = (api_key or os.getenv("OPEN_FUSION_API_KEY")
-                        or os.getenv("OPENROUTER_API_KEY") or "")
+        # Explicit kwargs take precedence; fall back to env only when not provided.
+        resolved_base_url = base_url
+        if not resolved_base_url:
+            resolved_base_url = os.getenv("OPEN_FUSION_BASE_URL") or DEFAULT_BASE_URL
+        self.base_url = resolved_base_url.rstrip("/")
+        resolved_api_key = api_key
+        if not resolved_api_key:
+            resolved_api_key = (os.getenv("OPEN_FUSION_API_KEY")
+                                or os.getenv("OPENROUTER_API_KEY") or "")
+        self.api_key = resolved_api_key
         self.max_retries = max_retries
         self.referer = referer or os.getenv("OPEN_FUSION_REFERER", "https://github.com/")
         self.title = title
@@ -89,13 +96,19 @@ class ModelClient:
 
     # -- blocking HTTP (runs in a thread) -------------------------------------
     def _post(self, payload: dict[str, Any], timeout: float) -> dict[str, Any]:
-        url = f"{self.base_url}/chat/completions"
+        """默认用 self.base_url / self.api_key 发请求。"""
+        return self._post_with(self.base_url, self.api_key, payload, timeout)
+
+    def _post_with(self, base_url: str, api_key: str,
+                   payload: dict[str, Any], timeout: float) -> dict[str, Any]:
+        """P1-B: 支持自定义 base_url/api_key 的 HTTP POST (多 Provider 路由)。"""
+        url = f"{base_url}/chat/completions"
         body = json.dumps(payload).encode("utf-8")
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {api_key}",
             "x-open-fusion-depth": str(self.fusion_depth),
-            "HTTP-Referer": self.referer,        # OpenRouter attribution (harmless elsewhere)
+            "HTTP-Referer": self.referer,
             "X-Title": self.title,
         }
         req = urllib.request.Request(url, data=body, headers=headers, method="POST")
@@ -132,8 +145,14 @@ class ModelClient:
             except json.JSONDecodeError:
                 args = {"_raw": args_raw}
             tcs.append(ToolCall(id=tc.get("id", ""), name=fn.get("name", ""), arguments=args))
+        # Content extraction: prefer final answer, fall back to reasoning_content if present
+        # (reasoning models like GLM/MiniMax/Doubao may put thinking in reasoning_content
+        #  and final answer in content; if max_tokens is too low, content can be empty)
+        content = msg.get("content") or ""
+        if not content and msg.get("reasoning_content"):
+            content = msg.get("reasoning_content", "")
         return Completion(
-            content=msg.get("content") or "",
+            content=content,
             tool_calls=tcs,
             usage=TokenUsage(prompt_tokens=int(usage_d.get("prompt_tokens", 0)),
                              completion_tokens=int(usage_d.get("completion_tokens", 0))),
@@ -151,7 +170,10 @@ class ModelClient:
         params: Params,
         response_format: str | None = None,
     ) -> Completion:
-        if not self.api_key:
+        # P1-B: 多 Provider — model 有独立 base_url/api_key 时用 per-model 网关。
+        eff_base_url = model.base_url or self.base_url
+        eff_api_key = model.api_key or self.api_key
+        if not eff_api_key:
             raise ProviderError("no API key. Set OPENROUTER_API_KEY (or OPEN_FUSION_API_KEY).")
 
         payload: dict[str, Any] = {
@@ -169,8 +191,13 @@ class ModelClient:
         attempt = 0
         while True:
             try:
-                # 用自带 executor（若有），否则用 asyncio 默认线程池
-                data = await loop.run_in_executor(self._executor, self._post, payload, params.timeout_s)
+                if model.base_url or model.api_key:
+                    data = await loop.run_in_executor(
+                        self._executor, self._post_with,
+                        eff_base_url, eff_api_key, payload, params.timeout_s)
+                else:
+                    data = await loop.run_in_executor(
+                        self._executor, self._post, payload, params.timeout_s)
                 return self._parse(data, model.slug)
             except ProviderError as e:
                 # If the model rejects json mode, retry once without it.

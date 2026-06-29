@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .rubric import Task
+from .rubric import Task, majority
 
 
 def _critical_success(task: Task, met: dict[str, bool]) -> bool:
@@ -69,8 +69,8 @@ def score_passes(task: Task, met_passes: list[dict[str, bool]]) -> LongHorizonSc
             if c.weight < 0 and met.get(c.id):
                 drift_hits[c.id] = drift_hits.get(c.id, 0) + 1
 
-    majority = (k // 2) + 1
-    drift = [cid for cid, h in drift_hits.items() if h >= majority]
+    maj = majority(k)
+    drift = [cid for cid, h in drift_hits.items() if h >= maj]
     pass_k = 1.0 if all(passes) else 0.0          # tau-bench: all k trials succeed
     pass_at_1 = 100.0 * sum(1 for p in passes if p) / k
     return LongHorizonScore(

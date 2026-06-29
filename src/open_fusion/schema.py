@@ -27,6 +27,9 @@ class FusionStatus(str, Enum):
     OK = "ok"
     ERROR = "error"
     JUDGE_FALLBACK = "judge_fallback"
+    CONSENSUS_SHORTCUT = "consensus_shortcut"
+    PICK_BEST_SHORTCUT = "pick_best_shortcut"
+    AGGREGATOR_MODE = "aggregator_mode"
 
 
 # --- token accounting --------------------------------------------------------
@@ -83,6 +86,8 @@ class Analysis:
     partial_coverage: list[dict[str, Any]] = field(default_factory=list)
     unique_insights: list[dict[str, Any]] = field(default_factory=list)
     blind_spots: list[str] = field(default_factory=list)
+    best_model: str | None = None       # judge-identified strongest model label (e.g. "MODEL C")
+    best_reason: str | None = None      # why best_model was chosen
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> "Analysis":
@@ -93,12 +98,15 @@ class Analysis:
             partial_coverage=list(d.get("partial_coverage") or []),
             unique_insights=list(d.get("unique_insights") or []),
             blind_spots=list(d.get("blind_spots") or []),
+            best_model=d.get("best_model"),
+            best_reason=d.get("best_reason"),
         )
 
     def to_dict(self) -> dict[str, Any]:
         return {"consensus": self.consensus, "contradictions": self.contradictions,
                 "partial_coverage": self.partial_coverage,
-                "unique_insights": self.unique_insights, "blind_spots": self.blind_spots}
+                "unique_insights": self.unique_insights, "blind_spots": self.blind_spots,
+                "best_model": self.best_model, "best_reason": self.best_reason}
 
     def validate(self) -> list[str]:
         """Return a list of problems. Strings starting with 'WARNING' are advisory
