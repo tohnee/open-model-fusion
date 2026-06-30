@@ -136,4 +136,12 @@ async def main():
 asyncio.run(main())
 ```
 
-`FusionResult.status` is one of `ok`, `error`, `judge_fallback`. Always check it.
+`FusionResult.status` can be `ok`, `judge_fallback`, `consensus_shortcut`,
+`pick_best_shortcut`, `aggregator_mode`, or `error`. Treat every status except
+`error` as a usable answer, and still inspect `telemetry["status"]` for the exact
+path.
+
+
+## 7. Beginner agent/chatbot integration guide
+
+For a step-by-step beginner manual covering Codex/Claude Code/custom chatbot integration, preset selection, trigger rules, and production checklists, see `BEGINNER_GUIDE.md`.

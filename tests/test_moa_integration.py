@@ -404,12 +404,15 @@ def test_similarity_empty_strings():
 
 
 def test_similarity_long_text_uses_prefix():
-    """_similarity 对 >2000 字符的文本使用前 500 字符比较 (快速路径)。"""
+    """_similarity 对 >2000 字符的文本使用 head+tail 采样，避免结论反转误判。"""
     from open_fusion.orchestrator import _similarity
     long_a = "X" * 2500
     long_b = "X" * 2500
-    # 两者前 500 字符相同 → 相似度 1.0
-    check("long identical prefix -> 1.0", _similarity(long_a, long_b) == 1.0)
+    check("long identical sampled text -> 1.0", _similarity(long_a, long_b) == 1.0)
+    divergent_tail_a = "shared setup " * 200 + "CONCLUSION: yes"
+    divergent_tail_b = "shared setup " * 200 + "CONCLUSION: no"
+    check("long divergent tails reduce similarity",
+          _similarity(divergent_tail_a, divergent_tail_b) < 0.999)
     # 一个长一个短 → 走快速路径
     sim = _similarity(long_a, "short")
     check("long vs short returns float", isinstance(sim, float))
@@ -518,7 +521,7 @@ def test_pick_best_short_circuit_path():
     })
     config = cfg(enable_consensus_shortcut=False, enable_pick_best=True)
     r = asyncio.run(fuse("q", config, client=c))
-    check("pick-best returns OK", r.status == FusionStatus.OK)
+    check("pick-best returns PICK_BEST_SHORTCUT", r.status == FusionStatus.PICK_BEST_SHORTCUT)
     check("pick-best uses model A answer", r.text == long_a)
     # 只调用了 2 panel + 1 judge = 3 次 (跳过 synthesis)
     check("pick-best skips synthesis (3 calls)", len(c.calls) == 3)
@@ -617,7 +620,7 @@ def test_consensus_short_circuit_full_path():
         depth=0, enable_consensus_shortcut=True, consensus_threshold=0.85,
     )
     r = asyncio.run(fuse("q", config, client=c))
-    check("consensus returns OK", r.status == FusionStatus.OK)
+    check("consensus returns CONSENSUS_SHORTCUT", r.status == FusionStatus.CONSENSUS_SHORTCUT)
     check("consensus skips judge+synth (3 panel calls)", len(c.calls) == 3)
     check("consensus uses agreed answer", r.text == same.strip())
 
@@ -734,7 +737,7 @@ def main():
         ("Depth: WARNING does not block", test_depth_guard_panel_not_empty_warning_passes),
         # Edge Path 补充 (覆盖率提升)
         ("Edge: similarity empty strings", test_similarity_empty_strings),
-        ("Edge: similarity long text prefix", test_similarity_long_text_uses_prefix),
+        ("Edge: similarity long text head+tail", test_similarity_long_text_uses_prefix),
         ("Edge: consensus insufficient responses", test_check_consensus_insufficient_responses),
         ("Edge: consensus no agreement", test_check_consensus_no_agreement),
         ("Edge: consensus picks longest", test_check_consensus_agreement_picks_longest),

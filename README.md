@@ -6,7 +6,7 @@ structured `Analysis` (consensus / contradictions / partial coverage / unique
 insights / blind spots) → synthesize one grounded final answer with web tools off.
 
 **Status: implemented & install-and-use.** Zero required dependencies (stdlib
-only). 31 core + 34 eval offline tests pass with no network.
+only). core and eval offline tests pass with no network.
 
 ## Quickstart
 
@@ -114,4 +114,4 @@ Tools are **off by default** so the skill runs with only a model API key. Enable
 grounded panels with `--tools` (`web_fetch` needs no key; `web_search` needs
 `EXA_API_KEY`/`BRAVE_API_KEY`; `bash` needs `OPEN_FUSION_ENABLE_BASH=1`).
 
-See `INSTALL.md` for Claude Code / Codex integration and `ARCHITECTURE.md` for internals.
+See `BEGINNER_GUIDE.md` for a beginner-friendly agent/chatbot integration manual, `INSTALL.md` for setup, and `ARCHITECTURE.md` for internals.

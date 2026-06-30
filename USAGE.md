@@ -1,3 +1,5 @@
+> 新手完整集成手册见 `BEGINNER_GUIDE.md`。
+
 # Open Fusion · 使用手册
 
 > Multi-model deliberation as a tool. 把一个问题扇出到一组模型并行作答，由裁判
@@ -19,7 +21,7 @@ pip install -e .
 
 ```bash
 open-fusion --help
-python tests/test_open_fusion.py      # 52 个离线测试，全过
+python tests/test_open_fusion.py      # 核心离线测试，全过
 ```
 
 ## 2. 设置 API Key
@@ -138,7 +140,7 @@ async def main():
     cfg = load_preset("quality")
     result = await fuse("你的问题", cfg)
     print(result.text)                # 最终答案
-    print(result.status)              # ok | error | judge_fallback
+    print(result.status)              # ok | error | judge_fallback | shortcut/aggregator statuses
     print(result.analysis.to_dict())  # 结构化裁判分析
     print(result.telemetry)           # 含 critical_path_ms / synthesis_ms 等
 

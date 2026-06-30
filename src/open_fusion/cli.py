@@ -14,8 +14,23 @@ import json
 import sys
 
 from .config import from_cli
+from .config import preset_names
 from .orchestrator import fuse
 from .schema import FusionStatus
+
+
+SUCCESS_STATUSES = {
+    FusionStatus.OK,
+    FusionStatus.JUDGE_FALLBACK,
+    FusionStatus.CONSENSUS_SHORTCUT,
+    FusionStatus.PICK_BEST_SHORTCUT,
+    FusionStatus.AGGREGATOR_MODE,
+}
+
+
+def is_success_status(status) -> bool:
+    """Return whether a terminal status produced a usable answer."""
+    return status in SUCCESS_STATUSES
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -23,7 +38,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="open-fusion",
         description="Multi-model deliberation: fan a prompt to a panel, judge, synthesize.")
     p.add_argument("question", help="The question/prompt to deliberate on.")
-    p.add_argument("--preset", choices=["quality", "budget"], default=None,
+    p.add_argument("--preset", choices=preset_names(), default=None,
                    help="Built-in panel (default: quality).")
     p.add_argument("--panel", default=None,
                    help="Comma-separated model slugs (overrides --preset).")
@@ -62,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.show_analysis and result.analysis is not None:
         print("[analysis] " + json.dumps(result.analysis.to_dict(), indent=2), file=sys.stderr)
 
-    return 0 if result.status == FusionStatus.OK else 1
+    return 0 if is_success_status(result.status) else 1
 
 
 if __name__ == "__main__":

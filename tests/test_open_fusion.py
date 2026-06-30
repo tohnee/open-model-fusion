@@ -64,6 +64,13 @@ def test_schema_and_gating():
     bad = Analysis.from_dict({"contradictions": [{"topic": "t", "stances": [{"stance": "x"}]}]})
     check("missing stance.model is flagged", any("attribution" in p for p in bad.validate()))
     check("empty analysis flagged", any("empty" in p for p in Analysis.from_dict({}).validate()))
+
+    bad_partial = Analysis.from_dict({"partial_coverage": [{"point": "raised by some"}]})
+    check("partial_coverage requires model attribution",
+          any("partial_coverage" in p and "attribution" in p for p in bad_partial.validate()))
+    bad_best = Analysis.from_dict({"consensus": ["x"], "best_model": "best one"})
+    check("best_model free-form label is flagged",
+          any("best_model" in p for p in bad_best.validate()))
     # the correctness invariant:
     check("SYNTHESIS has no tools", toolset_for_phase(Phase.SYNTHESIS) == ())
     check("PANEL has 3 tools", len(toolset_for_phase(Phase.PANEL)) == 3)
@@ -98,6 +105,8 @@ def test_preset_fallback():
     # 2-panel 的 preset 不启用（避免退化成单模型）
     check("quality preset (2 panel) keeps fast_majority_k None",
           q.fast_majority_k is None)
+    from open_fusion import preset_names
+    check("all scenario presets exposed", set(preset_names()) >= {"quality", "budget", "logic", "code", "moa_fast"})
 
 
 def test_from_cli_fast_majority():
@@ -271,6 +280,17 @@ def test_params_validation():
     check("temperature < 0 rejected", raised_neg_temp)
 
 
+def test_cli_success_statuses():
+    print("cli: success exit statuses")
+    from open_fusion.cli import is_success_status
+    check("OK is success", is_success_status(FusionStatus.OK))
+    check("judge_fallback is success", is_success_status(FusionStatus.JUDGE_FALLBACK))
+    check("consensus shortcut is success", is_success_status(FusionStatus.CONSENSUS_SHORTCUT))
+    check("pick-best shortcut is success", is_success_status(FusionStatus.PICK_BEST_SHORTCUT))
+    check("aggregator mode is success", is_success_status(FusionStatus.AGGREGATOR_MODE))
+    check("error is failure", not is_success_status(FusionStatus.ERROR))
+
+
 def test_synthesis_ms_tracked():
     # 修复 H1：synthesis_ms 被记录，critical_path_ms 包含它。
     print("telemetry: synthesis_ms tracked + critical_path includes it")
@@ -378,6 +398,7 @@ def main():
     test_depth_guard_via_client()
     test_fast_majority_cancelled_not_failed()
     test_params_validation()
+    test_cli_success_statuses()
     test_synthesis_ms_tracked()
     test_logging_captures_phase_events()
     test_logging_silent_by_default()

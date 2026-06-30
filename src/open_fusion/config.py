@@ -191,6 +191,11 @@ def load_preset(name: str, **overrides) -> FusionConfig:
     return cfg
 
 
+def preset_names() -> tuple[str, ...]:
+    """Return the built-in preset names accepted by `load_preset` and the CLI."""
+    return tuple(sorted(_PRESETS))
+
+
 def from_plugin(spec: dict, *, depth: int = 0) -> FusionConfig:
     """Build a FusionConfig from OpenRouter's fusion *plugin* shape:
 
