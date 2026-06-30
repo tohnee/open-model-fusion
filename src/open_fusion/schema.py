@@ -135,6 +135,25 @@ class Analysis:
             if not (isinstance(u, dict) and u.get("model")):
                 problems.append(f"unique_insights[{k}] missing model attribution")
 
+        for k, p in enumerate(self.partial_coverage):
+            if not isinstance(p, dict):
+                problems.append(f"partial_coverage[{k}] is not an object")
+                continue
+            models = p.get("models") or []
+            if not (isinstance(models, list) and models):
+                problems.append(f"partial_coverage[{k}] missing model attribution")
+            elif not all(isinstance(m, str) and m.strip() for m in models):
+                problems.append(f"partial_coverage[{k}] has invalid model attribution")
+
+        if self.best_model is not None:
+            if not isinstance(self.best_model, str) or not self.best_model.strip():
+                problems.append("best_model must be a non-empty string or null")
+            elif not (self.best_model.strip().upper().startswith("MODEL ")
+                      or "/" in self.best_model
+                      or self.best_model.strip().isdigit()
+                      or " " not in self.best_model.strip()):
+                problems.append("best_model should use a MODEL label, model slug, numeric label, or null")
+
         return problems
 
 

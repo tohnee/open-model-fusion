@@ -138,7 +138,7 @@ async def fuse(question: str, config: FusionConfig, *, client: ModelClient | Non
                           answer_chars=len(consensus_resp.content),
                           total_duration_ms=int((time.monotonic() - t_run0) * 1000))
                 return FusionResult(
-                    status=FusionStatus.OK,
+                    status=FusionStatus.CONSENSUS_SHORTCUT,
                     text=consensus_resp.content.strip(),
                     panel_responses=responses,
                     telemetry=tel.summary(),
@@ -215,7 +215,7 @@ async def fuse(question: str, config: FusionConfig, *, client: ModelClient | Non
                           answer_chars=len(best_resp.content),
                           total_duration_ms=int((time.monotonic() - t_run0) * 1000))
                 return FusionResult(
-                    status=FusionStatus.OK,
+                    status=FusionStatus.PICK_BEST_SHORTCUT,
                     text=best_resp.content.strip(),
                     analysis=analysis,
                     panel_responses=responses,
@@ -249,10 +249,13 @@ def _similarity(a: str, b: str) -> float:
     """Compute text similarity ratio between two strings (0.0 to 1.0)."""
     if not a or not b:
         return 0.0
-    # Use a quick prefix comparison for speed, fallback to SequenceMatcher
+    # Use a bounded head+tail comparison for speed, fallback to SequenceMatcher.
+    # Comparing only prefixes can falsely short-circuit long answers whose setup is
+    # identical but whose conclusions diverge; the tail captures those reversals.
     if len(a) > 2000 or len(b) > 2000:
-        # For long texts, compare first 500 chars (conclusions often match)
-        return SequenceMatcher(None, a[:500], b[:500]).ratio()
+        def sample(s: str) -> str:
+            return s[:500] + "\n...\n" + s[-500:]
+        return SequenceMatcher(None, sample(a), sample(b)).ratio()
     return SequenceMatcher(None, a, b).ratio()
 
 

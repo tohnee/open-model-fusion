@@ -64,6 +64,13 @@ def test_schema_and_gating():
     bad = Analysis.from_dict({"contradictions": [{"topic": "t", "stances": [{"stance": "x"}]}]})
     check("missing stance.model is flagged", any("attribution" in p for p in bad.validate()))
     check("empty analysis flagged", any("empty" in p for p in Analysis.from_dict({}).validate()))
+
+    bad_partial = Analysis.from_dict({"partial_coverage": [{"point": "raised by some"}]})
+    check("partial_coverage requires model attribution",
+          any("partial_coverage" in p and "attribution" in p for p in bad_partial.validate()))
+    bad_best = Analysis.from_dict({"consensus": ["x"], "best_model": "best one"})
+    check("best_model free-form label is flagged",
+          any("best_model" in p for p in bad_best.validate()))
     # the correctness invariant:
     check("SYNTHESIS has no tools", toolset_for_phase(Phase.SYNTHESIS) == ())
     check("PANEL has 3 tools", len(toolset_for_phase(Phase.PANEL)) == 3)
