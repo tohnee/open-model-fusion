@@ -94,6 +94,7 @@ open-fusion-eval --preset budget --baseline anthropic/claude-opus-4.8 \
 
 ## Files
 
+- `BEGINNER_GUIDE.md` — beginner-friendly manual for integrating Open Fusion into coding agents and chatbots.
 - `INSTALL.md` — setup + how to install into Claude Code / Codex.
 - `ARCHITECTURE.md` — module map, contracts, data flow, state machine.
 - `EVAL.md` — the DRACO-style evaluation standard, the three task suites (draco /
@@ -101,8 +102,8 @@ open-fusion-eval --preset budget --baseline anthropic/claude-opus-4.8 \
 - `DESIGN.html` — full design document: principle analysis, logical design,
   evaluation methodology (incl. pass^k long-horizon), and how eval gates skill use.
 - `references/fusion-mechanism.md` — the principle-level mechanism this models.
-- `tests/test_open_fusion.py` — 31 core offline tests (no network/key).
-- `tests/test_eval.py` — 34 evaluation offline tests (no network/key).
+- `tests/test_open_fusion.py` — core offline tests (no network/key).
+- `tests/test_eval.py` — evaluation offline tests (no network/key).
 - `tests/test_eval_suites.py` — 42 suite tests: 10 DRACO domains, pass^k long-horizon,
   semiconductor/DRAM, loaders, verdict overlays (no network/key).
 - `src/open_fusion/` — the implementation (schema, prompts, config, cost, tools,
