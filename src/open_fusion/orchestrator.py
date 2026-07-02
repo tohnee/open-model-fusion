@@ -200,27 +200,50 @@ async def fuse(question: str, config: FusionConfig, *, client: ModelClient | Non
                             panel_responses=responses, telemetry=tel.summary())
 
     # --- PICK-BEST SHORT-CIRCUIT -------------------------------------------
-    # 改进1：如果 judge 识别出 best_model 且该模型的回答足够完整，
-    # 直接采用该模型的回答，跳过 synthesis（避免 synthesizer 破坏好答案）。
+    # v1.2 改进: 如果 judge 识别出 best_model, 直接返回该模型的回答, 跳过 synthesis。
+    # 这避免了 synthesizer "投票覆盖" 问题 — 当少数模型答对但多数答错时,
+    # synthesizer 会被多数错误答案带偏, 而 pick-best 直接采纳 judge 选中的最佳答案。
+    #
+    # v1.2.1 fallback: 如果置信度评估发现 judge 判断不确定 (矛盾多/无共识/best_reason 含
+    # 不确定性词汇), 则不短路, 回退到完整 synthesizer 流程。这解决了 math_2 场景下
+    # judge 误判导致短路锁定错误答案的问题。
     if config.enable_pick_best:
         best_idx = _resolve_best_model(analysis.best_model, responses)
         if best_idx is not None:
             best_resp = responses[best_idx]
-            # 只有当 best 回答足够长（非空且 >100 字符）时才 short-circuit
-            if best_resp.ok and len(best_resp.content.strip()) > 100:
-                tel.status = "pick_best_shortcut"
-                log_event("orchestrator", "pick_best_shortcut",
-                          best_model=best_resp.model,
-                          best_reason=analysis.best_reason,
-                          answer_chars=len(best_resp.content),
-                          total_duration_ms=int((time.monotonic() - t_run0) * 1000))
-                return FusionResult(
-                    status=FusionStatus.PICK_BEST_SHORTCUT,
-                    text=best_resp.content.strip(),
-                    analysis=analysis,
-                    panel_responses=responses,
-                    telemetry=tel.summary(),
-                )
+            min_chars = getattr(config, "pick_best_min_chars", 10)
+            if best_resp.ok and len(best_resp.content.strip()) >= min_chars:
+                # v1.2.1: 评估 pick-best 置信度
+                confidence, reason = _assess_pick_best_confidence(analysis, responses, best_idx)
+                confidence_threshold = getattr(config, "pick_best_confidence_threshold", 0.5)
+
+                if confidence >= confidence_threshold:
+                    # 高置信度: 短路返回
+                    tel.status = "pick_best_shortcut"
+                    log_event("orchestrator", "pick_best_shortcut",
+                              best_model=best_resp.model,
+                              best_reason=analysis.best_reason,
+                              answer_chars=len(best_resp.content),
+                              min_chars_threshold=min_chars,
+                              confidence=round(confidence, 3),
+                              confidence_reason=reason,
+                              skipped_synth=True,
+                              total_duration_ms=int((time.monotonic() - t_run0) * 1000))
+                    return FusionResult(
+                        status=FusionStatus.PICK_BEST_SHORTCUT,
+                        text=best_resp.content.strip(),
+                        analysis=analysis,
+                        panel_responses=responses,
+                        telemetry=tel.summary(),
+                    )
+                else:
+                    # 低置信度: 回退到 synthesizer, 避免 judge 误判锁定错误答案
+                    log_event("orchestrator", "pick_best_fallback",
+                              best_model=best_resp.model,
+                              confidence=round(confidence, 3),
+                              confidence_reason=reason,
+                              threshold=confidence_threshold,
+                              reason="low_confidence_fallback_to_synth")
 
     # --- SYNTHESIZE ---------------------------------------------------------
     # "The calling model then writes the final answer grounded in that analysis."
@@ -350,3 +373,78 @@ def _resolve_best_model(best_model_label: str | None,
             return i
 
     return None
+
+
+# v1.2.1: pick-best 置信度评估 — 低置信度时回退到 synthesizer
+# 解决 math_2 问题: judge 误判导致短路锁定错误答案
+_UNCERTAINTY_MARKERS = frozenset({
+    "unclear", "no clear winner", "comparable", "similar quality",
+    "difficult to determine", "hard to say", "tied", "equivalent",
+    "no clear best", "ambiguous", "marginal", "slight", "arguable",
+    "debatable", "uncertain", "not definitive", "no definitive",
+})
+
+
+def _assess_pick_best_confidence(
+    analysis: Analysis,
+    responses: list[PanelResponse],
+    best_idx: int,
+) -> tuple[float, str]:
+    """v1.2.1: 评估 pick-best 短路的置信度。
+
+    综合 4 个信号判断 judge 的 best_model 选择是否可靠:
+      1. best_reason 是否包含不确定性词汇 (权重 -0.3)
+      2. contradictions 数量 — 矛盾越多, 选择越不确定 (权重 -0.1/矛盾)
+      3. consensus 是否为空 — 无共识意味着模型分歧大 (权重 -0.2)
+      4. best 答案与其他答案的相似度 — 如果 best 是"异类"(低相似度),
+         可能是 judge 误选了边缘答案 (权重 -0.2)
+
+    返回: (confidence: 0.0-1.0, reason: str)
+    """
+    confidence = 1.0  # 起始满置信度, 逐项扣减
+
+    # 信号 1: best_reason 含不确定性词汇
+    reason_text = (analysis.best_reason or "").lower()
+    if not reason_text or reason_text in ("null", "none"):
+        confidence -= 0.3
+        return (max(confidence, 0.0), "empty_best_reason")
+    for marker in _UNCERTAINTY_MARKERS:
+        if marker in reason_text:
+            confidence -= 0.3
+            return (max(confidence, 0.0), f"uncertain_best_reason:{marker}")
+
+    # 信号 2: contradictions 数量
+    n_contradictions = len(analysis.contradictions)
+    if n_contradictions >= 2:
+        confidence -= 0.1 * n_contradictions
+        # 不 return, 继续检查其他信号
+
+    # 信号 3: consensus 为空
+    if not analysis.consensus:
+        confidence -= 0.2
+
+    # 信号 4: best 答案与其他答案的相似度
+    ok_responses = [r for r in responses if r.ok and r.content.strip()]
+    if len(ok_responses) >= 2:
+        best_content = responses[best_idx].content.strip()
+        similarities = []
+        for i, r in enumerate(responses):
+            if r.ok and r.content.strip() and i != best_idx:
+                sim = _similarity(best_content, r.content.strip())
+                similarities.append(sim)
+        if similarities:
+            avg_sim = sum(similarities) / len(similarities)
+            # 如果 best 答案与其他答案平均相似度 < 0.3, 它可能是"异类"
+            if avg_sim < 0.3:
+                confidence -= 0.2
+                return (max(confidence, 0.0), f"low_similarity_outlier:avg_sim={avg_sim:.2f}")
+
+    # 汇总原因
+    reasons = []
+    if n_contradictions >= 2:
+        reasons.append(f"n_contradictions={n_contradictions}")
+    if not analysis.consensus:
+        reasons.append("no_consensus")
+    if not reasons:
+        return (max(confidence, 0.0), "high_confidence")
+    return (max(confidence, 0.0), ";".join(reasons))

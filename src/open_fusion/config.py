@@ -96,6 +96,8 @@ class FusionConfig:
     enable_consensus_shortcut: bool = True   # 当多数模型答案一致时跳过 judge+synthesis
     enable_pick_best: bool = True            # 当 judge 识别出 best_model 时直接采用
     consensus_threshold: float = 0.85        # 文本相似度阈值
+    pick_best_min_chars: int = 10            # v1.2: pick-best 触发的最小答案长度
+    pick_best_confidence_threshold: float = 0.5  # v1.2.1: 低于此置信度回退到 synthesizer
     # --- MoA 集成新增字段 ---
     mode: FusionMode = FusionMode.FULL       # P0-A: FULL=完整pipeline, AGGREGATOR=跳过judge
     enable_panel_trim: bool = False          # P1-A: 裁剪 panel 输入(去掉系统提示)

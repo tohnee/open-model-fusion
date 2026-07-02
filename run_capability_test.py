@@ -6,6 +6,7 @@
   Arm 2: 单模型 kimi-k2.6 (中游单模型 baseline)
   Arm 3: Fusion FULL (panel: kimi/deepseek-flash/doubao, judge: glm-5.2)
   Arm 4: Fusion AGGREGATOR (panel: 同上, 无 judge, 直接合成)
+  Arm 5: Fusion PICK-BEST (panel: glm-5.2/kimi/deepseek-flash, judge: glm-5.2, pick-best 短路)
 
 任务设计原则:
   - 每道题有唯一正确答案 (客观评分, 不依赖 LLM-as-judge)
@@ -51,6 +52,13 @@ FUSION_PANEL = [
     ModelSpec("doubao-seed-2.0-pro"),
 ]
 FUSION_JUDGE = ModelSpec("glm-5.2")
+
+# v1.2: pick-best arm 的 panel — 包含 glm-5.2 (最强模型加入 panel, 让 judge 可以选中它)
+PICKBEST_PANEL = [
+    ModelSpec("glm-5.2"),
+    ModelSpec("kimi-k2.6"),
+    ModelSpec("deepseek-v4-flash"),
+]
 
 
 # ============================================================================
@@ -264,6 +272,7 @@ async def main():
     print(f"  Arm 2: 单模型 {SOLO_MID.slug} (中游单模型)")
     print(f"  Arm 3: Fusion FULL (panel: {[m.slug for m in FUSION_PANEL]}, judge: {FUSION_JUDGE.slug})")
     print(f"  Arm 4: Fusion AGGREGATOR (panel: 同上, 无 judge)")
+    print(f"  Arm 5: Fusion PICK-BEST (panel: {[m.slug for m in PICKBEST_PANEL]}, judge: {FUSION_JUDGE.slug})")
 
     all_results = []
 
@@ -326,6 +335,30 @@ async def main():
     r4 = await run_fusion(config_agg, TASKS, "Fusion-AGG")
     all_results.append(r4)
 
+    # Arm 5: Fusion FULL + PICK-BEST (glm-5.2 加入 panel, judge 可选中它)
+    print(f"\n{'─'*72}")
+    print(f"[Arm 5] Fusion PICK-BEST (panel + judge + pick-best 短路)")
+    print(f"{'─'*72}")
+    config_pickbest = FusionConfig(
+        panel=PICKBEST_PANEL,
+        judge=FUSION_JUDGE,
+        caller=FUSION_JUDGE,
+        mode=FusionMode.FULL,
+        base_url=BASE_URL,
+        api_key=API_KEY,
+        enable_consensus_shortcut=False,
+        enable_pick_best=True,          # 开启 pick-best
+        pick_best_min_chars=10,         # 短答案也能触发
+        max_in_flight=3,
+        params={
+            Phase.PANEL: Params(temperature=0.7, max_tokens=4096, timeout_s=45.0, max_tool_calls=0),
+            Phase.JUDGE: Params(temperature=0.2, max_tokens=4096, timeout_s=45.0, max_tool_calls=0),
+            Phase.SYNTHESIS: Params(temperature=0.3, max_tokens=4096, timeout_s=45.0, max_tool_calls=0),
+        },
+    )
+    r5 = await run_fusion(config_pickbest, TASKS, "Fusion-PICKBEST")
+    all_results.append(r5)
+
     # ========================================================================
     # 汇总报告
     # ========================================================================
@@ -360,6 +393,7 @@ async def main():
     solo_mid_acc = r2["accuracy"]
     fusion_full_acc = r3["accuracy"]
     fusion_agg_acc = r4["accuracy"]
+    pickbest_acc = r5["accuracy"]
 
     print(f"\n  1. 编排 vs 最强单模型:")
     delta = fusion_full_acc - solo_strong_acc
@@ -376,7 +410,21 @@ async def main():
     print(f"     FULL vs AGGREGATOR: {fusion_full_acc}% vs {fusion_agg_acc}% "
           f"({'↑' if delta > 0 else '↓'} {abs(delta):.1f}%)")
 
-    print(f"\n  4. 弱模型编排是否超越强模型单干:")
+    print(f"\n  4. PICK-BEST vs FULL (pick-best 短路是否避免投票覆盖):")
+    delta = pickbest_acc - fusion_full_acc
+    print(f"     PICK-BEST vs FULL: {pickbest_acc}% vs {fusion_full_acc}% "
+          f"({'↑' if delta > 0 else '↓'} {abs(delta):.1f}%)")
+
+    print(f"\n  5. PICK-BEST vs 最强单模型 (编排+短路能否超越单模型):")
+    delta = pickbest_acc - solo_strong_acc
+    if delta > 0:
+        print(f"     ✓ PICK-BEST ({pickbest_acc}%) 超越 {SOLO_STRONG.slug} ({solo_strong_acc}%)!")
+    elif delta == 0:
+        print(f"     → 持平 ({pickbest_acc}% vs {solo_strong_acc}%)")
+    else:
+        print(f"     ✗ PICK-BEST ({pickbest_acc}%) 未超越 {SOLO_STRONG.slug} ({solo_strong_acc}%)")
+
+    print(f"\n  6. 弱模型编排是否超越强模型单干:")
     if fusion_full_acc > solo_strong_acc:
         print(f"     ✓ 是! 编排 ({fusion_full_acc}%) 超越 {SOLO_STRONG.slug} ({solo_strong_acc}%)")
     elif fusion_full_acc == solo_strong_acc:
@@ -388,14 +436,15 @@ async def main():
     print(f"\n{'='*72}")
     print("逐题对比 (✓=正确, ✗=错误)")
     print(f"{'='*72}")
-    print(f"\n{'Task ID':<12} {'Domain':<10} {'Solo-Strong':>12} {'Solo-Mid':>10} {'Fusion-FULL':>12} {'Fusion-AGG':>11}")
-    print(f"{'-'*68}")
+    print(f"\n{'Task ID':<12} {'Domain':<10} {'Strong':>8} {'Mid':>6} {'FULL':>6} {'AGG':>6} {'PICK-BEST':>10}")
+    print(f"{'-'*62}")
     for i, task in enumerate(TASKS):
         s1 = "✓" if r1["results"][i]["correct"] else "✗"
         s2 = "✓" if r2["results"][i]["correct"] else "✗"
         s3 = "✓" if r3["results"][i]["correct"] else "✗"
         s4 = "✓" if r4["results"][i]["correct"] else "✗"
-        print(f"{task['id']:<12} {task['domain']:<10} {s1:>12} {s2:>10} {s3:>12} {s4:>11}")
+        s5 = "✓" if r5["results"][i]["correct"] else "✗"
+        print(f"{task['id']:<12} {task['domain']:<10} {s1:>8} {s2:>6} {s3:>6} {s4:>6} {s5:>10}")
 
     print(f"\n{'='*72}")
     print("结论")
@@ -418,6 +467,31 @@ async def main():
     if solo_only:
         print(f"\n  编排丢失的题 (单模型答对但编排答错): {solo_only}")
         print(f"  → 这些题说明编排可能在合成时丢失了正确信息")
+
+    # 分析 pick-best 是否挽回了丢失的题
+    if solo_only:
+        pickbest_recovered = []
+        for i, task in enumerate(TASKS):
+            if (r1["results"][i]["correct"] and not r3["results"][i]["correct"]
+                    and r5["results"][i]["correct"]):
+                pickbest_recovered.append(task["id"])
+        if pickbest_recovered:
+            print(f"\n  ★ PICK-BEST 挽回的题 (FULL 丢失但 PICK-BEST 答对): {pickbest_recovered}")
+            print(f"  → pick-best 短路成功避免了投票覆盖问题!")
+        else:
+            print(f"\n  ✗ PICK-BEST 未能挽回丢失的题")
+            print(f"  → judge 可能未选中正确模型, 或 panel 中无正确答案")
+
+    # pick-best 触发情况
+    pickbest_triggered = []
+    for i, task in enumerate(TASKS):
+        status = r5["results"][i].get("status", "")
+        if "pick_best" in status:
+            pickbest_triggered.append(task["id"])
+    if pickbest_triggered:
+        print(f"\n  PICK-BEST 短路触发的题: {pickbest_triggered}")
+    else:
+        print(f"\n  PICK-BEST 短路未触发 (judge 可能未选出 best_model 或答案太短)")
 
     if not fusion_only and not solo_only:
         print(f"\n  编排与单模型答对/答错的题完全一致")
