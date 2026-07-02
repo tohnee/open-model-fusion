@@ -217,6 +217,25 @@ async def fuse(question: str, config: FusionConfig, *, client: ModelClient | Non
                 confidence, reason = _assess_pick_best_confidence(analysis, responses, best_idx)
                 confidence_threshold = getattr(config, "pick_best_confidence_threshold", 0.5)
 
+                # v1.3 P0: 答案验证器 — 基于规则的格式/数值检查
+                verifier_verdict = "skipped"
+                verifier_reason = ""
+                if getattr(config, "enable_verifier", False):
+                    from .verifier import verify_answer
+                    task_meta = getattr(config, "_task_metadata", None)
+                    vr = verify_answer(best_resp.content, task_meta)
+                    verifier_verdict = vr.verdict.value
+                    verifier_reason = vr.reason
+                    if vr.should_fallback:
+                        # 验证器否决: 强制回退到 synthesizer
+                        log_event("orchestrator", "pick_best_verifier_reject",
+                                  best_model=best_resp.model,
+                                  verdict=verifier_verdict,
+                                  verifier_reason=verifier_reason,
+                                  reason="verifier_rejected_fallback_to_synth")
+                        confidence = 0.0  # 强制低置信度, 走 fallback
+                        reason = f"verifier_rejected:{verifier_reason}"
+
                 if confidence >= confidence_threshold:
                     # 高置信度: 短路返回
                     tel.status = "pick_best_shortcut"

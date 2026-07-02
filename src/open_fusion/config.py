@@ -98,6 +98,8 @@ class FusionConfig:
     consensus_threshold: float = 0.85        # 文本相似度阈值
     pick_best_min_chars: int = 10            # v1.2: pick-best 触发的最小答案长度
     pick_best_confidence_threshold: float = 0.5  # v1.2.1: 低于此置信度回退到 synthesizer
+    enable_verifier: bool = False            # v1.3 P0: 启用答案验证器 (规则检查)
+    _task_metadata: dict = field(default_factory=dict)  # v1.3: 题目元数据 (expected_range 等)
     # --- MoA 集成新增字段 ---
     mode: FusionMode = FusionMode.FULL       # P0-A: FULL=完整pipeline, AGGREGATOR=跳过judge
     enable_panel_trim: bool = False          # P1-A: 裁剪 panel 输入(去掉系统提示)
